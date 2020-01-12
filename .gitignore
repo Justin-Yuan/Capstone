@@ -3,3 +3,10 @@
 
 # Ada Library Information
 *.ali
+
+
+.DS_Store
+
+*bin/
+*build/
+*devel/
