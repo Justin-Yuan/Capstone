@@ -51,12 +51,6 @@ sudo apt-get install pyqt5-dev-tools
 cd ~/catkin_ws/
 catkin_make
 
-# soft links for git 
-ln -s $HOME/mie443_contest1 ~/catkin_ws/src/mie443_contest1
-ln -s $HOME/mie443_contest2 ~/catkin_ws/src/mie443_contest2
-ln -s $HOME/mie443_contest3/mie443_contest3 ~/catkin_ws/src/mie443_contest3
-ln -s $HOME/mie443_contest3/turtlebot_follower ~/catkin_ws/src/turtlebot_follower
-
 
 # # test launch 
 # source /opt/ros/kinetic/setup.bash 
