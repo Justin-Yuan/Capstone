@@ -11,19 +11,32 @@
 
 // Which bumper is hit -> which direction should we go
 // Updated in the bumperCallback and used in main
-bool bumperLeft = 0, bumperCenter = 0, bumperRight = 0; 
+bool bumperL = 0, bumperC = 0, bumperR = 0;
 
 void bumperCallback(const kobuki_msgs::BumperEvent::ConstPtr& msg)
 {
     ROS_INFO("BUUUUUMP!!!");
     ROS_INFO("Bumper: %d", msg->bumper);
     ROS_INFO("Bumper State: %d", msg->state);
-    if (msg->bumper == 0)
-        bumperLeft = !bumperLeft;
-    else if (msg->bumper == 1)
-        bumperCenter = !bumperCenter;
-    else if (msg->bumper == 2)
-        bumperRight = !bumperRight;
+    // This callback updates the left right and center bumper states
+    if (msg->bumper == 0 && msg->state == 1)
+    {
+        bumperL = !bumperL;
+    }
+    else if (msg->bumper == 1 && msg->state == 1)
+    {
+        bumperC = !bumperC;
+    }
+    else if (msg->bumper == 2 && msg->state == 1)
+    {
+        bumperR = !bumperR;
+    }
+    else if (msg->state == 0)
+    {
+        bumperL = 0;
+        bumperC = 0;
+        bumperR = 0;
+    }
 }
 
 void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
@@ -56,6 +69,8 @@ int main(int argc, char **argv)
     while(ros::ok() && secondsElapsed <= 480) {
         ros::spinOnce();
         //fill with your code
+        //Use information from bumperCallback to update the speed
+
 
         vel.angular.z = angular;
         vel.linear.x = linear;
