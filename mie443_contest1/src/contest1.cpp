@@ -9,10 +9,21 @@
 
 #include <chrono>
 
+// Which bumper is hit -> which direction should we go
+// Updated in the bumperCallback and used in main
+bool bumperLeft = 0, bumperCenter = 0, bumperRight = 0; 
 
 void bumperCallback(const kobuki_msgs::BumperEvent::ConstPtr& msg)
 {
-	//fill with your code
+    ROS_INFO("BUUUUUMP!!!");
+    ROS_INFO("Bumper: %d", msg->bumper);
+    ROS_INFO("Bumper State: %d", msg->state);
+    if (msg->bumper == 0)
+        bumperLeft = !bumperLeft;
+    else if (msg->bumper == 1)
+        bumperCenter = !bumperCenter;
+    else if (msg->bumper == 2)
+        bumperRight = !bumperRight;
 }
 
 void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
