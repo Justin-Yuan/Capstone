@@ -18,7 +18,7 @@
 // global vars 
 float angular = 0.0;
 float linear = 0.0;
-float posX = 0.0, posY = 0.0, yaw = 0.0; ​
+float posX = 0.0, posY = 0.0, yaw = 0.0;
 uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
 float minLaserDist = std::numeric_limits<float>::infinity();
@@ -81,7 +81,7 @@ int main(int argc, char **argv)
 
 
     while(ros::ok() && secondsElapsed <= 480) {
-        ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, yaw*180/pi, maxLaserRange);
+        ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
         ros::spinOnce();
         
         // Check if any of the bumpers were pressed.
