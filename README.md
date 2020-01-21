@@ -45,3 +45,6 @@ to reset gazebo simulation without shutting down (don't seem to work tho)
 ```bash
 rosservice call /gazebo/reset_world
 ```
+
+## Links
+MIE quercus page: https://q.utoronto.ca/courses/139490
