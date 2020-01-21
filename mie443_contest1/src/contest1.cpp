@@ -86,8 +86,11 @@ int main(int argc, char **argv)
         
         // Check if any of the bumpers were pressed.
         bool any_bumper_pressed = false;
+        bool pressed = false;
         for (uint32_t b_idx = 0; b_idx < N_BUMPER; ++b_idx) {
-            any_bumper_pressed |= (bumper[b_idx] == kobuki_msgs::BumperEvent::PRESSED);
+            pressed = (bumper[b_idx] == kobuki_msgs::BumperEvent::PRESSED);
+            any_bumper_pressed |= pressed;
+            ROS_INFO("Bumper: (%i) Pressed: %s", b_idx, pressed?"true":"false");
         }
         //
         // Control logic after bumpers are being pressed.
