@@ -15,7 +15,7 @@
 #define RAD2DEG(rad) ((rad) * 180. / M_PI)
 #define DEG2RAD(deg) ((deg) * M_PI / 180.)
 
-// global vars 
+// global vars
 float angular = 0.0;
 float linear = 0.0;
 float posX = 0.0, posY = 0.0, yaw = 0.0; ​
@@ -75,6 +75,7 @@ int main(int argc, char **argv)
     geometry_msgs::Twist vel;
 
     // contest count down timer
+
     std::chrono::time_point<std::chrono::system_clock> start;
     start = std::chrono::system_clock::now();
     uint64_t secondsElapsed = 0;
@@ -83,7 +84,7 @@ int main(int argc, char **argv)
     while(ros::ok() && secondsElapsed <= 480) {
         ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, yaw*180/pi, maxLaserRange);
         ros::spinOnce();
-        
+
         // Check if any of the bumpers were pressed.
         bool any_bumper_pressed = false;
         for (uint32_t b_idx = 0; b_idx < N_BUMPER; ++b_idx) {
@@ -95,12 +96,15 @@ int main(int argc, char **argv)
         if (posX < 0.5 && yaw < M_PI / 12 && !any_bumper_pressed) {
             angular = 0.0;
             linear = 0.2;
+            ROS_INFO("\n========== Keep going ==========");
         }
         else if (yaw < M_PI / 2 && posX > 0.5 && !any_bumper_pressed) {
             angular = M_PI / 6;
             linear = 0.0;
+            ROS_INFO("\n========== Turn ==========");
         }
         else if (minLaserDist > 1. && !any_bumper_pressed) {
+            ROS_INFO("\n========== Escape ==========");
             linear = 0.1;
             if (yaw < 17 / 36 * M_PI || posX > 0.6) {
                 angular = M_PI / 12.;
@@ -113,6 +117,10 @@ int main(int argc, char **argv)
             }
         }
         else {
+            // TODO: if needed, add bumper-pressed reaction here
+            // Shouldn't be triggered tho - if triggered, means that laser doesn't work
+            ROS_INFO("\n========== BUUUUUUUUUMP ==========");
+            ROS_INFO("Bumper hit! Check if laser is working!");
             angular = 0.0;
             linear = 0.0;
         }
