@@ -15,13 +15,15 @@ class motionPlanner {
 private:
     const float x, y, yaw;
     const uint8_t *bumper;
+    const float minLaserDist;
 
-public:
+public :
     // Initialize the return
     vector<float> output_vels;
 
     // Constructor
-    motionPlanner(float _x, float _y, float _yaw, uint8_t *_bumper) : x(_x), y(_y), yaw(_yaw), bumper(_bumper) {
+    motionPlanner(float _x, float _y, float _yaw, float _laser, uint8_t *_bumper) : x(_x), y(_y), yaw(_yaw), minLaserDist(_laser), bumper(_bumper)
+    {
         // Initialize the control variables
         int num_vels = 2;
         output_vels = vector<float>(num_vels, 0);
