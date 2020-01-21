@@ -18,7 +18,7 @@
 // global vars
 float angular = 0.0;
 float linear = 0.0;
-float posX = 0.0, posY = 0.0, yaw = 0.0; ​
+float posX = 0.0, posY = 0.0, yaw = 0.0;
 uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
 float minLaserDist = std::numeric_limits<float>::infinity();
@@ -82,13 +82,16 @@ int main(int argc, char **argv)
 
 
     while(ros::ok() && secondsElapsed <= 480) {
-        ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, yaw*180/pi, maxLaserRange);
+        ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
         ros::spinOnce();
 
         // Check if any of the bumpers were pressed.
         bool any_bumper_pressed = false;
+        bool pressed = false;
         for (uint32_t b_idx = 0; b_idx < N_BUMPER; ++b_idx) {
-            any_bumper_pressed |= (bumper[b_idx] == kobuki_msgs::BumperEvent::PRESSED);
+            pressed = (bumper[b_idx] == kobuki_msgs::BumperEvent::PRESSED);
+            any_bumper_pressed |= pressed;
+            ROS_INFO("Bumper: (%i) Pressed: %s", b_idx, pressed?"true":"false");
         }
         //
         // Control logic after bumpers are being pressed.
