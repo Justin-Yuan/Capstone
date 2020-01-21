@@ -1,21 +1,37 @@
+#ifndef PLANNERS_HEADER
+#define PLANNERS_HEADER
+
 #include <cstdint>
 #include <cmath>
 #include <stdio.h>
 #include <vector>
-
+#include <iostream>
 
 using namespace std;
 
-vector<float> stupidPlanner(float x, float y, float yaw, uint8_t* bumper);
 
 class motionPlanner {
-    
-public:
-    // Constructor
-    motionPlanner(float _x, float _y, float _yaw, uint8_t* _bumper)
-    // Initialize the control variables
-    int num_vels = 2;
-    vector<float> output_vels;
-    output_vels = vector<float>(num_vels, 0);
+// If we really want, we can have another "stupidPlanner" class inherenting from this one
+private:
+    const float x, y, yaw;
+    const uint8_t *bumper;
 
-}
+public:
+    // Initialize the return
+    vector<float> output_vels;
+
+    // Constructor
+    motionPlanner(float _x, float _y, float _yaw, uint8_t *_bumper) : x(_x), y(_y), yaw(_yaw), bumper(_bumper) {
+        // Initialize the control variables
+        int num_vels = 2;
+        output_vels = vector<float>(num_vels, 0);
+    }
+
+    ~motionPlanner();
+
+    // Functions
+    vector<float> dummyfunc(float x, float y, float yaw, uint8_t *bumper);
+};
+
+
+#endif
