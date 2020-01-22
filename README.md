@@ -9,7 +9,7 @@ run turtlebot_script.sh to install ROS and Turtlebot2 (might take a while)
 
 \*bin/, \*build and \*devel directories are ignored from git 
 
-in order for os to locate our `mie443_contest1` package, do this 
+in order for os to locate our `mie443_contest1` package, do this in bashrc file 
 ```bash
 export ROS_PACKAGE_PATH=$ROS_PACKAGE_PATH:~/catkin_ws/src/Capstone
 ```
@@ -26,7 +26,7 @@ simulation run for contest 1, for each of the following line, launsh in a separa
 ```bash
 roscore
 # load map and bot 
-roslaunch turtlebot_gazebo turtlebot_world.launch
+roslaunch mie443_contest1 turtlebot_world.launch
 # run slam 
 roslaunch mie443_contest1 gmapping.launch
 # run rviz viewer

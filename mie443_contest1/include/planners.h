@@ -6,6 +6,8 @@
 #include <stdio.h>
 #include <vector>
 #include <iostream>
+#include <ros/console.h>
+#include "ros/ros.h"
 
 using namespace std;
 
@@ -32,7 +34,9 @@ public :
     ~motionPlanner();
 
     // Functions
-    vector<float> dummyfunc(float x, float y, float yaw, uint8_t *bumper);
+    vector<float> simpleWallFollowing(float yaw, float laser);
+
+    vector<float> tutorialPlanner(float x, float y, float yaw, uint8_t *_bumper);
 };
 
 

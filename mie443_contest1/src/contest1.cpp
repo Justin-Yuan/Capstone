@@ -10,14 +10,13 @@
 #include <cmath>
 
 #include <chrono>
+#include "planners.h"
 
 #define N_BUMPER (3)
 #define RAD2DEG(rad) ((rad) * 180. / M_PI)
 #define DEG2RAD(deg) ((deg) * M_PI / 180.)
 
-// global vars
-float angular = 0.0;
-float linear = 0.0;
+// global vars 
 float posX = 0.0, posY = 0.0, yaw = 0.0;
 uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
@@ -75,61 +74,20 @@ int main(int argc, char **argv)
     geometry_msgs::Twist vel;
 
     // contest count down timer
-
     std::chrono::time_point<std::chrono::system_clock> start;
     start = std::chrono::system_clock::now();
     uint64_t secondsElapsed = 0;
 
-
+    motionPlanner* mp = new motionPlanner(posX, posY, yaw, minLaserDist, bumper);
     while(ros::ok() && secondsElapsed <= 480) {
         ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
         ros::spinOnce();
+        
+        vector<float> odometryInfo = {0.0, 0.0};
+        odometryInfo = mp->tutorialPlanner(posX, posY, yaw, bumper);
 
-        // Check if any of the bumpers were pressed.
-        bool any_bumper_pressed = false;
-        bool pressed = false;
-        for (uint32_t b_idx = 0; b_idx < N_BUMPER; ++b_idx) {
-            pressed = (bumper[b_idx] == kobuki_msgs::BumperEvent::PRESSED);
-            any_bumper_pressed |= pressed;
-            ROS_INFO("Bumper: (%i) Pressed: %s", b_idx, pressed?"true":"false");
-        }
-        //
-        // Control logic after bumpers are being pressed.
-        ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
-        if (posX < 0.5 && yaw < M_PI / 12 && !any_bumper_pressed) {
-            angular = 0.0;
-            linear = 0.2;
-            ROS_INFO("\n========== Keep going ==========");
-        }
-        else if (yaw < M_PI / 2 && posX > 0.5 && !any_bumper_pressed) {
-            angular = M_PI / 6;
-            linear = 0.0;
-            ROS_INFO("\n========== Turn ==========");
-        }
-        else if (minLaserDist > 1. && !any_bumper_pressed) {
-            ROS_INFO("\n========== Escape ==========");
-            linear = 0.1;
-            if (yaw < 17 / 36 * M_PI || posX > 0.6) {
-                angular = M_PI / 12.;
-            }
-            else if (yaw < 19 / 36 * M_PI || posX < 0.4) {
-                angular = -M_PI / 12.;
-            }
-            else {
-                angular = 0;
-            }
-        }
-        else {
-            // TODO: if needed, add bumper-pressed reaction here
-            // Shouldn't be triggered tho - if triggered, means that laser doesn't work
-            ROS_INFO("\n========== BUUUUUUUUUMP ==========");
-            ROS_INFO("Bumper hit! Check if laser is working!");
-            angular = 0.0;
-            linear = 0.0;
-        }
-
-        vel.angular.z = angular;
-        vel.linear.x = linear;
+        vel.angular.z = odometryInfo[0];
+        vel.linear.x = odometryInfo[1];
         vel_pub.publish(vel);
 
         // The last thing to do is to update the timer.
