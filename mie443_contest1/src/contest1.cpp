@@ -10,13 +10,14 @@
 #include <cmath>
 
 #include <chrono>
-#include "planners.h"
+#include "mie443_contest1/include/planners.h"
 
 #define N_BUMPER (3)
 #define RAD2DEG(rad) ((rad) * 180. / M_PI)
 #define DEG2RAD(deg) ((deg) * M_PI / 180.)
 
-// global vars 
+// global vars
+vector<float> odometryInfo = {0.0, 0.0};
 float posX = 0.0, posY = 0.0, yaw = 0.0;
 uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
@@ -78,13 +79,12 @@ int main(int argc, char **argv)
     start = std::chrono::system_clock::now();
     uint64_t secondsElapsed = 0;
 
-    motionPlanner* mp = new motionPlanner(posX, posY, yaw, minLaserDist, bumper);
+    motionPlanner* planner = new motionPlanner(posX, posY, yaw, minLaserDist, bumper);
     while(ros::ok() && secondsElapsed <= 480) {
         ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
         ros::spinOnce();
-        
-        vector<float> odometryInfo = {0.0, 0.0};
-        odometryInfo = mp->tutorialPlanner(posX, posY, yaw, bumper);
+
+        odometryInfo = planner->tutorialPlanner();
 
         vel.angular.z = odometryInfo[0];
         vel.linear.x = odometryInfo[1];
