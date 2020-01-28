@@ -38,16 +38,28 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
 	nLasers = (msg->angle_max - msg->angle_min) / msg->angle_increment;
     desiredNLasers = DEG2RAD(desiredAngle)/msg->angle_increment;
-    ROS_INFO("Size of laser scan array: %i and size of offset: %i", nLasers, desiredNLasers);
+    ROS_INFO("Size of laser scan array: %i, size of offset: %i, angle_max: %f, angle_min: %f, range_max: %f, range_min: %f, angle_increment: %f", 
+        nLasers, desiredNLasers, msg->angle_max, msg->angle_min, msg->range_max, msg->range_min, msg->angle_increment);
+
+    // for (uint32_t laser_idx = 0; laser_idx < nLasers; ++laser_idx){
+    //     if (msg->ranges[laser_idx] > 0) {
+    //         minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
+    //     }
+    // }
 
     if (desiredAngle * M_PI / 180 < msg->angle_max && -desiredAngle * M_PI / 180 > msg->angle_min) {
         for (uint32_t laser_idx = nLasers / 2 - desiredNLasers; laser_idx < nLasers / 2 + desiredNLasers; ++laser_idx){
-            minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
+            if (msg->ranges[laser_idx] > 0) {
+                minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
+            }
         }
     }
     else {
         for (uint32_t laser_idx = 0; laser_idx < nLasers; ++laser_idx) {
-            minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
+            if (msg->ranges[laser_idx] > 0) {
+                minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
+            }
+            
         }
     }
 }
@@ -105,9 +117,9 @@ int main(int argc, char **argv)
 
     motionPlanner planner (posX, posY, yaw, minLaserDist, bumper);
     while(ros::ok() && secondsElapsed <= 480) {
-        ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
+        ROS_INFO("Postion: (%f, %f) Orientation: %f degrees, MinLaserDist: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
         ros::spinOnce();
-        
+
         vel = wallFollower(posX, posY, yaw, minLaserDist);
         vel_pub.publish(vel);
 
