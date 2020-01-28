@@ -54,3 +54,8 @@ MIE quercus page: https://q.utoronto.ca/courses/139490
 S09 machine 
 100.64.76.236
 9 machine 
+
+## TODO LIST
+1. Basic Algorithm for the robot to run in simulation. E.G. Wall Following
+2. Run basic algorithm on real robot
+3. 
