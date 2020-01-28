@@ -10,7 +10,8 @@
 #include <cmath>
 
 #include <chrono>
-#include "mie443_contest1/include/planners.h"
+// #include "mie443_contest1/include/planners.h"
+#include "planners.h"
 
 #define N_BUMPER (3)
 #define RAD2DEG(rad) ((rad) * 180. / M_PI)
