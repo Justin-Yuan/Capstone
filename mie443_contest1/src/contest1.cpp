@@ -21,7 +21,6 @@ using namespace std;
 #define DEG2RAD(deg) ((deg) * M_PI / 180.)
 
 // global vars
-vector<float> odometryInfo = {0.0, 0.0};
 float posX = 0.0, posY = 0.0, yaw = 0.0;
 uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
@@ -61,6 +60,27 @@ void odomCallback (const nav_msgs::Odometry::ConstPtr& msg)
     ROS_INFO("Position: (%f, %f) Orientation: %f rad or %f degrees.", posX, posY, yaw, RAD2DEG(yaw));
 }
 
+geometry_msgs::Twist wallFollower(float posX, float posY, float yaw, float minLaserDist) {
+    geometry_msgs::Twist output;
+
+    float desiredDistFromWall = 1;
+    float currentDistFromWall = minLaserDist;
+    float dt = 0.1;
+    float kp = 1.0;
+
+    float error = desiredDistFromWall - currentDistFromWall;
+    float controlYaw = kp * error;
+    ROS_INFO("Error: (%f) Control Yaw: %f", error, controlYaw);
+    if (controlYaw < -0.5) {
+        controlYaw = -0.5;
+    }
+    output.angular.z = controlYaw;
+
+    float forwardSpeed = 0.3;
+    output.linear.x = forwardSpeed;
+
+    return output;
+}
 
 int main(int argc, char **argv)
 {
@@ -87,11 +107,8 @@ int main(int argc, char **argv)
     while(ros::ok() && secondsElapsed <= 480) {
         ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
         ros::spinOnce();
-
-        odometryInfo = planner.tutorialPlanner();
-
-        vel.angular.z = odometryInfo[0];
-        vel.linear.x = odometryInfo[1];
+        
+        vel = wallFollower(posX, posY, yaw, minLaserDist);
         vel_pub.publish(vel);
 
         // The last thing to do is to update the timer.
