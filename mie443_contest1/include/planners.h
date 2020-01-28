@@ -20,6 +20,10 @@
 using namespace std;
 using std::vector;
 
+#define N_BUMPER (3)
+#define RAD2DEG(rad) ((rad) * 180. / M_PI)
+#define DEG2RAD(deg) ((deg) * M_PI / 180.)
+
 class motionPlanner {
 // If we really want, we can have another "stupidPlanner" class inherenting from this one
 private:
