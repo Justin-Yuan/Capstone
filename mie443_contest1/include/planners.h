@@ -45,13 +45,13 @@ public:
         output_vels = vector<float>(num_vels, 0.);
     }
 
-    ~motionPlanner();
+    ~motionPlanner(){ }
 
     // Functions
     vector<float> simpleWallFollowing();
 
-    // vector<float> tutorialPlanner();
-    void tutorialPlanner();
+    vector<float> tutorialPlanner();
+    // void tutorialPlanner();
 };
 
 #endif
