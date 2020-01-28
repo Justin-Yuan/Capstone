@@ -35,7 +35,7 @@ public :
     motionPlanner(float _posX, float _posY, float _yaw, float _laser, uint8_t *_bumper) : posX(_posX), posY(_posY), yaw(_yaw), minLaserDist(_laser), bumper(_bumper)
     {
         // Initialize the control variables
-        cout << "Class created, first bumper:" << bumper[0].state << endl;
+        cout << "Class created, bumper type:" << type(bumper[0]) << endl;
         int num_vels = 2;
         output_vels = vector<float>(num_vels, 0);
     }
