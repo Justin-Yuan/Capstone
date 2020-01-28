@@ -6,8 +6,7 @@ vector<float> motionPlanner::simpleWallFollowing()
     cout << "Inprogress" << endl;
 }
 
-// vector<float> motionPlanner::tutorialPlanner()
-void motionPlanner::tutorialPlanner()
+vector<float> motionPlanner::tutorialPlanner()
 {
     cout << "in function" << endl;
     // float angular = 0.0;
@@ -54,6 +53,5 @@ void motionPlanner::tutorialPlanner()
     // cout << "Updated angular velocity" << output_vels[0] << endl;
     // cout << "Updated linear velocity" << output_vels[1] << endl;
     // return output_vels;
-    // return output_vels;
-    return;
+    return output_vels;
 }
