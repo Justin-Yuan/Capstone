@@ -48,8 +48,7 @@ public :
     // Functions
     vector<float> simpleWallFollowing();
 
-    // vector<float> tutorialPlanner();
-    void tutorialPlanner();
+    vector<float> tutorialPlanner();
 };
 
 
