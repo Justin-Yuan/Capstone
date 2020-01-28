@@ -17,15 +17,17 @@
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_datatypes.h>
 
+using namespace std;
 
-class motionPlanner {
-// If we really want, we can have another "stupidPlanner" class inherenting from this one
+class motionPlanner
+{
+    // If we really want, we can have another "stupidPlanner" class inherenting from this one
 private:
     const float posX, posY, yaw;
     const uint8_t *bumper;
     const float minLaserDist;
 
-public :
+public:
     // Initialize the return
     vector<float> output_vels;
 
@@ -33,9 +35,11 @@ public :
     motionPlanner(float _posX, float _posY, float _yaw, float _laser, uint8_t *_bumper) : posX(_posX), posY(_posY), yaw(_yaw), minLaserDist(_laser), bumper(_bumper)
     {
         // Initialize the control variables
-        cout << endl << endl << "Class created" << endl
-                          << endl
-                          << endl;
+        cout << endl
+             << endl
+             << "Class created" << endl
+             << endl
+             << endl;
         // cout << "Class created, bumper type:" << type(bumper[0]) << endl;
         int num_vels = 2;
         output_vels = vector<float>(num_vels, 0.);
@@ -46,8 +50,8 @@ public :
     // Functions
     vector<float> simpleWallFollowing();
 
-    vector<float> tutorialPlanner();
+    // vector<float> tutorialPlanner();
+    void tutorialPlanner();
 };
-
 
 #endif
