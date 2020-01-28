@@ -85,7 +85,8 @@ int main(int argc, char **argv)
         ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
         ros::spinOnce();
 
-        odometryInfo = planner.tutorialPlanner();
+        // odometryInfo = planner.tutorialPlanner();
+        planner.tutorialPlanner();
 
         vel.angular.z = odometryInfo[0];
         vel.linear.x = odometryInfo[1];
