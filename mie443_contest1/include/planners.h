@@ -17,8 +17,6 @@
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_datatypes.h>
 
-using namespace std;
-
 
 class motionPlanner {
 // If we really want, we can have another "stupidPlanner" class inherenting from this one
