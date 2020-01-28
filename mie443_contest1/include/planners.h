@@ -37,7 +37,7 @@ public :
         // Initialize the control variables
         // cout << "Class created, bumper type:" << type(bumper[0]) << endl;
         int num_vels = 2;
-        output_vels = vector<float>(num_vels, 0);
+        output_vels = vector<float>(num_vels, 0.);
     }
 
     ~motionPlanner();
