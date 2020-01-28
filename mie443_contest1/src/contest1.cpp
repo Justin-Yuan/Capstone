@@ -49,12 +49,17 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 
     if (desiredAngle * M_PI / 180 < msg->angle_max && -desiredAngle * M_PI / 180 > msg->angle_min) {
         for (uint32_t laser_idx = nLasers / 2 - desiredNLasers; laser_idx < nLasers / 2 + desiredNLasers; ++laser_idx){
-            if (msg->range_max > msg->ranges[laser_idx] > 0) {
-                minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
-                ROS_INFO("MinLaserDist: %f", minLaserDist);
+            if (msg->ranges[laser_idx] > 0) {
+                if (msg->ranges[laser_idx] == std::numeric_limits<float>::infinity()){
+                        ROS_INFO("MinLaserDist still : %f", minLaserDist);
+                    }
+                else {
+                    minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
+                    ROS_INFO("MinLaserDist: %f", minLaserDist);
+                }
             }
             else {
-                ROS_INFO("MinLaserDist not updated");
+                ROS_INFO("MinLaserDist not updated < 0");
             }
         }
     }
