@@ -18,7 +18,7 @@
 #include <tf/transform_datatypes.h>
 
 using namespace std;
-
+using std::vector;
 
 class motionPlanner {
 // If we really want, we can have another "stupidPlanner" class inherenting from this one

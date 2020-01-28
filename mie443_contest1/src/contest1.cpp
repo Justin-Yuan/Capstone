@@ -13,6 +13,9 @@
 // #include "mie443_contest1/include/planners.h"
 #include "planners.h"
 
+using namespace std;
+using std::vector;
+
 #define N_BUMPER (3)
 #define RAD2DEG(rad) ((rad) * 180. / M_PI)
 #define DEG2RAD(deg) ((deg) * M_PI / 180.)
