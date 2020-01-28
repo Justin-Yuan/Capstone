@@ -48,3 +48,9 @@ rosservice call /gazebo/reset_world
 
 ## Links
 MIE quercus page: https://q.utoronto.ca/courses/139490
+
+
+## IP address 
+S09 machine 
+100.64.76.236
+9 machine 
