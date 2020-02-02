@@ -51,9 +51,20 @@ MIE quercus page: https://q.utoronto.ca/courses/139490
 
 
 ## IP address 
-S09 machine 
+get ip address 
+```bash
+hostname -I | awk ’{print $1}’
+```
+S09 machine: 
 100.64.76.236
-9 machine 
+9 machine:
+
+launch vnc on turtlebot machine 
+```bash
+x11vnc -ncache 10
+```
+port is 5900
+
 
 ## TODO LIST
 1. Basic Algorithm for the robot to run in simulation. E.G. Wall Following
