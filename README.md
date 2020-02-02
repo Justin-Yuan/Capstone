@@ -59,7 +59,9 @@ run simulation with 1 command
 ```bash
 bash run.sh 
 ``` 
-to kill after finish running, press **Enter** in the launch 
+- by default, it loads world/robot, launches gmapping/slam, rviz and runs the control executable 
+- use `-e <name>` or `--executable <name>` to run different executable, e.g. `contest1` or `reference`
+- to kill after finish running, press **Enter** in the launch 
 terminal (this will kill all child terminals)
 
 
