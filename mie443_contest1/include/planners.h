@@ -52,7 +52,7 @@ public:
     ~motionPlanner(){ }
 
     // Functions
-    vector<float> simpleWallFollowing();
+    geometry_msgs::Twist wallFollower(float minLaserDist);
 
     vector<float> tutorialPlanner();
     // void tutorialPlanner();

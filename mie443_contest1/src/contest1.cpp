@@ -71,24 +71,6 @@ void odomCallback (const nav_msgs::Odometry::ConstPtr& msg)
     ROS_INFO("Position: (%f, %f) Orientation: %f rad or %f degrees.", posX, posY, yaw, RAD2DEG(yaw));
 }
 
-geometry_msgs::Twist wallFollower(float posX, float posY, float yaw, float minLaserDist) {
-    geometry_msgs::Twist output;
-
-    float desiredDistFromWall = 1;
-    float currentDistFromWall = minLaserDist;
-    float kp = 2.0;
-
-    float error = desiredDistFromWall - currentDistFromWall;
-    float controlYaw = kp * error;
-    ROS_INFO("Error: (%f) Control Yaw: %f", error, controlYaw);
-    output.angular.z = controlYaw;
-
-    float forwardSpeed = 0.2;
-    output.linear.x = forwardSpeed;
-
-    return output;
-}
-
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "image_listener");
@@ -110,12 +92,13 @@ int main(int argc, char **argv)
     start = std::chrono::system_clock::now();
     uint64_t secondsElapsed = 0;
 
-    motionPlanner planner (posX, posY, yaw, minLaserDist, bumper);
+    motionPlanner planner(posX, posY, yaw, minLaserDist, bumper);
     while(ros::ok() && secondsElapsed <= 480) {
         ROS_INFO("Postion: (%f, %f) Orientation: %f degrees, MinLaserDist: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
         ros::spinOnce();
 
-        vel = wallFollower(posX, posY, yaw, minLaserDist);
+        // Obtain movement command from planner
+        vel = planner.wallFollower(minLaserDist);
         vel_pub.publish(vel);
 
         // The last thing to do is to update the timer.
