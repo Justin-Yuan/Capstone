@@ -11,14 +11,25 @@
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_datatypes.h>
 using namespace std;
+
+//Debug mode
+bool debug = True;
+bool simulation = True;
+
 //Define Global Variables
 double posX, posY, yaw, yaw_now;
 double x, y;
 double pi = 3.1416;
+
 //Define Maximum Speed
 double linear_max = 0.15;
+if (simulation)
+{
+    linear_max = 0.25
+}
 double angular_max = pi / 6;
 bool bumperLeft = 0, bumperCenter = 0, bumperRight = 0;
+
 //Define Laser Ranges
 double laserRange = 10;
 double laserRange_Left = 10, laserRange_Right = 10;
@@ -27,9 +38,10 @@ int right_ind = 0, left_ind = 0;
 int spin_counter = 0;
 double x_turn = 0, y_turn = 0;
 double x_last = 0, y_last = 0;
+
 //Rotation function - with given degree and direction.
-//When the degree input is 360, the robot will rotate until all the
-three laser ranges are greater than 0.5 void rotate(float degree, char direction)
+//When the degree input is 360, the robot will rotate until all the three laser ranges are greater than 0.5 
+void rotate(float degree, char direction)
 {
     //Define rad
     double rad;
