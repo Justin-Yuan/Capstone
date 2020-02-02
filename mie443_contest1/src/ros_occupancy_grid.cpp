@@ -10,6 +10,8 @@ contains two main structures:
 
 Documentation: http://docs.ros.org/api/nav_msgs/html/msg/OccupancyGrid.html
 Or can get the OGM in terminal by the command: rostopic echo /map
+
+Below is the code for printing out the map
 */
 
 
@@ -17,6 +19,7 @@ Or can get the OGM in terminal by the command: rostopic echo /map
 #include <nav_msgs/GetMap.h>
 #include <vector>
 using namespace std;
+
 // grid map
 int rows;
 int cols;
@@ -32,7 +35,7 @@ int main(int argc, char** argv)
  ros::NodeHandle nh;
  if (!requestMap(nh))
  exit(-1);
- printGrid();
+ printGrid(); //Print out the grid
  return 0;
 }
 
@@ -88,11 +91,11 @@ void printGrid()
  int freeCells = 0;
  for (int i = 0; i < rows; i++)
  {
- printf("Row no. %d\n", i);
- for (int j = 0; j < cols; j++)
- {
- printf("%d ", grid[i][j] ? 1 : 0);
- }
+    printf("Row no. %d\n", i);
+    for (int j = 0; j < cols; j++)
+    {
+        printf("%d ", grid[i][j] ? 1 : 0);
+    }
  printf("\n");
  }
 }
