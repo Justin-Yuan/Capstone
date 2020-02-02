@@ -1,13 +1,30 @@
 // #include "mie443_contest1/include/planners.h"
 #include "planners.h"
 
-vector<float> motionPlanner::simpleWallFollowing()
+geometry_msgs::Twist motionPlanner::wallFollower(float minLaserDist) 
 {
-    cout << "Inprogress" << endl;
+    geometry_msgs::Twist output;
+
+    float desiredDistFromWall = 1;
+    float currentDistFromWall = minLaserDist;
+    float kp = 2.0;
+
+    // Get yaw using P controller
+    float error = desiredDistFromWall - currentDistFromWall;
+    float controlYaw = kp * error;
+    ROS_INFO("Error: (%f) Control Yaw: %f", error, controlYaw);
+    output.angular.z = controlYaw;
+
+    // Set forward speed to a constant
+    float forwardSpeed = 0.2;
+    output.linear.x = forwardSpeed;
+
+    return output;
 }
 
 vector<float> motionPlanner::tutorialPlanner()
 {
+    cout << "TutorialPlanner in use..." << endl;
     float angular = 0.0;
     float linear = 0.0;
 

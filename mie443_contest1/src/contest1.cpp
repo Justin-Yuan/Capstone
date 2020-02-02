@@ -13,12 +13,14 @@
 // #include "mie443_contest1/include/planners.h"
 #include "planners.h"
 
+using namespace std;
+
+
 #define N_BUMPER (3)
 #define RAD2DEG(rad) ((rad) * 180. / M_PI)
 #define DEG2RAD(deg) ((deg) * M_PI / 180.)
 
 // global vars
-vector<float> odometryInfo = {0.0, 0.0};
 float posX = 0.0, posY = 0.0, yaw = 0.0;
 uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
@@ -36,18 +38,29 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
 	nLasers = (msg->angle_max - msg->angle_min) / msg->angle_increment;
     desiredNLasers = DEG2RAD(desiredAngle)/msg->angle_increment;
-    ROS_INFO("Size of laser scan array: %i and size of offset: %i", nLasers, desiredNLasers);
+    //ROS_INFO("Size of laser scan array: %i, size of offset: %i, angle_max: %f, angle_min: %f, range_max: %f, range_min: %f, angle_increment: %f", 
+        //nLasers, desiredNLasers, msg->angle_max, msg->angle_min, msg->range_max, msg->range_min, msg->angle_increment);
 
+    minLaserDist = 10;
     if (desiredAngle * M_PI / 180 < msg->angle_max && -desiredAngle * M_PI / 180 > msg->angle_min) {
         for (uint32_t laser_idx = nLasers / 2 - desiredNLasers; laser_idx < nLasers / 2 + desiredNLasers; ++laser_idx){
-            minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
+            if (msg->range_max > msg->ranges[laser_idx] > 0) {
+                    minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
+            }
         }
-    }
-    else {
+    } else {
         for (uint32_t laser_idx = 0; laser_idx < nLasers; ++laser_idx) {
-            minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
+            if (msg->range_max > msg->ranges[laser_idx] > 0) {
+                minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
+            }
         }
     }
+
+    if (minLaserDist == 10) {
+        ROS_INFO("Robot stuck in corner!");
+        minLaserDist = 2;
+    }
+    ROS_INFO("MinLaserDist: %f", minLaserDist);
 }
 
 void odomCallback (const nav_msgs::Odometry::ConstPtr& msg)
@@ -57,7 +70,6 @@ void odomCallback (const nav_msgs::Odometry::ConstPtr& msg)
     yaw = tf::getYaw(msg->pose.pose.orientation);
     ROS_INFO("Position: (%f, %f) Orientation: %f rad or %f degrees.", posX, posY, yaw, RAD2DEG(yaw));
 }
-
 
 int main(int argc, char **argv)
 {
@@ -80,15 +92,13 @@ int main(int argc, char **argv)
     start = std::chrono::system_clock::now();
     uint64_t secondsElapsed = 0;
 
-    motionPlanner* planner = new motionPlanner(posX, posY, yaw, minLaserDist, bumper);
+    motionPlanner planner(posX, posY, yaw, minLaserDist, bumper);
     while(ros::ok() && secondsElapsed <= 480) {
-        ROS_INFO("Postion: (%f, %f) Orientation: %f degrees Range: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
+        ROS_INFO("Postion: (%f, %f) Orientation: %f degrees, MinLaserDist: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
         ros::spinOnce();
 
-        odometryInfo = planner->tutorialPlanner();
-
-        vel.angular.z = odometryInfo[0];
-        vel.linear.x = odometryInfo[1];
+        // Obtain movement command from planner
+        vel = planner.wallFollower(minLaserDist);
         vel_pub.publish(vel);
 
         // The last thing to do is to update the timer.

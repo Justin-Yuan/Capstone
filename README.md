@@ -64,3 +64,9 @@ launch vnc on turtlebot machine
 x11vnc -ncache 10
 ```
 port is 5900
+
+
+## TODO LIST
+1. Basic Algorithm for the robot to run in simulation. E.G. Wall Following
+2. Run basic algorithm on real robot
+3. 
