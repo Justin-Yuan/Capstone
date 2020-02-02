@@ -16,17 +16,18 @@ using namespace std;
 bool debug = true;
 bool simulation = true;
 
-// Define Global Variables
-double posX, posY, yaw, yaw_now;
+// Global variables
+double posX, posY, yaw, currYaw;
 double x, y;
-double pi = 3.1416;
 
-// Define Maximum Speed
+// Speed caps
 double linear_max = 0.15;
 double angular_max = pi / 6;
+
+// Bumper variables
 bool bumperLeft = 0, bumperCenter = 0, bumperRight = 0;
 
-// Define Laser Ranges
+// Laser variables
 double laserRange = 10;
 double laserRange_Left = 10, laserRange_Right = 10;
 int laserSize = 0, laserOffset = 0, desiredAngle = 15;
@@ -34,6 +35,19 @@ int right_ind = 0, left_ind = 0;
 int spin_counter = 0;
 double x_turn = 0, y_turn = 0;
 double x_last = 0, y_last = 0;
+
+// Misc constants
+double pi = 3.1416;
+double cos30 = cos(pi/6);
+float exploreDist = 0.5;
+float exploreDist_lr = exploreDist_min * cos30; // FIXME: might actually need to be / instead of *
+float exploreDist_side = 1.0;
+int exploreAngle_bins = 12;
+int exploreAngle_size = 360 / exploreAngle_bins;
+vector<int> exploreZone_front = {exploreAngle_bins * 7 / 8, exploreAngle_bins * 1 / 8}; // > or <
+vector<int> exploreZone_left = {exploreAngle_bins * 1 / 8, exploreAngle_bins * 3 / 8}; // > and <
+vector<int> exploreZone_back = {exploreAngle_bins * 3 / 8, exploreAngle_bins * 5 / 8}; // > and <
+vector<int> exploreZone_right = {exploreAngle_bins * 5 / 8, exploreAngle_bins * 7 / 8}; // > and <
 
 // Helper functions
 inline publishVelocity(float angular, float linear)
@@ -47,14 +61,42 @@ inline publishVelocity(float angular, float linear)
     ros::spinOnce();
 }
 
-inline double deg2rad(float degree)
+inline double deg2rad(float angle)
 {
     return degree *pi / 180;
 }
 
-void rotate2angle(float degree, bool CCW) {
+inline bool inRange(int bin, const vector<float> & binRange, front=false){
     /**
-     * Rotate the robot accordingly
+     * Check if the bin is in the desired zone
+     */
+    if (front){
+        return bin > binRange[0] || bin < binRange[1];
+    }
+    else {
+        return bin > binRange[0] && bin < binRange[1];
+    }
+}
+
+void rotate2bin(int bin){
+    /**
+     * Command center of which rotate to perform
+     * @param  {int} bin : bin index
+     */
+    else if (bin < exploreAngle_bins / 2)
+    {
+        rotate2angle(bin * exploreAngle_size);
+    }
+    else
+    {
+        rotate2angle((exploreAngle_bins - bin) * exploreAngle_size, CCW = false);
+    }
+}
+
+void rotate2angle(float angle, bool CCW=true)
+{
+    /**
+     * Rotate the robot to disred angle
      * @param  {degree} float : degree in degrees
      * @param  {CCW} bool : default rotation is CCW == turn left, set to false if need to turn right
      */
@@ -66,13 +108,14 @@ void rotate2angle(float degree, bool CCW) {
     // constraints
     ros::spinOnce();
     currYaw = yaw;
-    double rad = deg2rad(degree); // TODO: maybe move it to before passing to rotate
+    double rad = deg2rad(angle); // TODO: maybe move it to before passing to rotate
 
     // rotate until desired
     while (abs(yaw - currYaw) < rad)
     {
-        publishVelocity(angular, linear)
+        publishVelocity(angular, linear);
     }
+}
 
 void rotate2explore(bool CCW=true)
 {
@@ -84,73 +127,62 @@ void rotate2explore(bool CCW=true)
     if (!CCW)
         angular = angular * -1;
 
-    // TODO: change to the
-    // Stop turning (ready to go forward linearly) if there's something far away enough
-    while (laserRange < 0.7 || laserRange_Left < 0.5 ||
-            laserRange_Right < 0.5)
+    // FIXME: change to the logic of when to stop
+    // Currently: stop turning (ready to go forward linearly) if there's something far away enough
+    while (laserRange < exploreDist || laserRange_Left < exploreDist_lr || laserRange_Right < exploreDist_lr)
     {
-        publishVelocity(angular, linear = 0.0)
+        publishVelocity(angular, linear = 0.0);
     }
 }
 
 // Correction function - the robot will rotate 360 degrees first. Then it will rotate to the direction that has the most space.
-// The robot should choose direction on its left or right side prior to the front side.Also, the robot will not turn back.
-void correction()
-{
-    // Define the number of increments in the 360-degree rotation
-    int directions = 24;
+// The robot should choose direction on its left or right side prior to the front side. Also, the robot will not turn back.
+void correction() {
+    /**
+     * Rotate and choose direction to explore
+     */
     // Define variables to store maximum value
-    int max_ind_forward = 0;
-    int max_ind_side = 0;
-    double max_reading_forward = 0;
-    double max_reading_side = 0;
-    int max_index = 0;
+    int maxDist_front = 0, maxDist_front_idx = 0; // default is 0 zo that if things go weird, it just moves forward
+    int maxDist_side = 0, maxDist_side_idx = 0;
+    int best_bin = 0;
 
-    // Get the max index
-    for (int i = 0; i < directions; i++)
+    // Explore the front/left/right zones (no back zone!)
+    for (int bin = 0; bin < exploreAngle_bins; bin++)
     {
-        // Update status
         ros::spinOnce();
-        // Edit the size of deadzone
-        // Size of forward zone
-        if (i < directions / 8 || i > directions * 7 / 8)
+
+        // TODO: logic is fine, but might need to change the code appearance
+        if (inRange(bin, exploreZone_front, front=true))
         {
-            if (laserRange > max_reading_forward)
+            if (laserRange > maxDist_front)
             {
-                max_reading_forward = laserRange;
-                max_ind_forward = i;
+                maxDist_front = laserRange;
+                maxDist_front_idx = bin;
             }
         }
-        // Size of the left/right zone
-        else if ((i >= directions / 8 && i <= directions * 3 / 8) || (i >= directions * 5 / 8 && i <= directions * 7 / 8))
+        else if (inRange(bin, exploreZone_left) || inRange(bin, exploreZone_right))
         {
-            if (laserRange > max_reading_side)
+            if (laserRange > maxDist_side)
             {
-                max_reading_side = laserRange;
-                max_ind_side = i;
+                maxDist_side = laserRange;
+                maxDist_side_idx = bin;
             }
         }
-        rotate(360 / directions, 'r');
+        rotate2angle(exploreAngle_size);
     }
-    // Determine if it can go left/right. If not, go to the direction in forward zone
-    if (max_reading_side > 1.0)
+
+    // Prefers to turn to the side in this mode
+    if (maxDist_side > exploreDist_side)
     {
-        max_index = max_ind_side;
+        rotate2bin(maxDist_side_idx);
     }
     else
     {
-        max_index = max_ind_forward;
-    }
-    // Determine the direction and rotate
-    if (max_index < directions / 2)
-    {
-        rotate(360 * max_index / directions, 'r');
-    }
-    else
-    {
-        rotate(360 * (directions - max_index) / directions, 'l');
+        rotate2bin(maxDist_front_idx);
     }
 }
+
+
 // Bumper call back function
 void bumperCallback(const kobuki_msgs::BumperEvent msg)
 {
@@ -338,9 +370,9 @@ int main(int argc, char **argv)
             }
             linear = 0;
             if (bump == 1)
-                rotate(20, 'l');
+                rotate2angle(20);
             else if (bump == 2)
-                rotate(20, 'r');
+                rotate2angle(20, CCW=false);
 
             // Moving Forward
             linear = 0.1;
@@ -356,9 +388,9 @@ int main(int argc, char **argv)
             linear = 0;
             // going back to the initial direction
             if (bump == 1)
-                rotate(20, 'r');
+                rotate2angle(20);
             else if (bump == 2)
-                rotate(20, 'l');
+                rotate2angle(20, CCW = false);
         }
 
         // Free Space movement
@@ -405,13 +437,13 @@ int main(int argc, char **argv)
                  laserRange < 0.5)
         {
             // Determine which side has more space
-            if (laserRange_Right > laserRange_Left)
+            if (laserRange_Right < laserRange_Left)
             {
-                rotate(360, 'r');
+                rotate2explore();
             }
             else
             {
-                rotate(360, 'l');
+                rotate2explore(CCW=false);
             }
         }
         else
@@ -445,9 +477,7 @@ int main(int argc, char **argv)
         }
 
         // write the defined speed to the robot
-        vel.angular.z = angular;
-        vel.linear.x = linear;
-        vel_pub.publish(vel);
+        publishVelocity(angular, linear);
         // The last thing to do is to update the timer.
         secondsElapsed =
             std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - start).count();
