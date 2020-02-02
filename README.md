@@ -59,8 +59,11 @@ run simulation with 1 command
 ```bash
 bash run.sh 
 ``` 
-to kill after finish running, press **Enter** in the launch 
+- by default, it loads world/robot, launches gmapping/slam, rviz and runs the control executable 
+- use `-e <name>` or `--executable <name>` to run different executable, e.g. `contest1` or `reference`
+- to kill after finish running, press **Enter** in the launch 
 terminal (this will kill all child terminals)
+- you can save map by enabling `-s` or `--save_map`, this will save the map named **map** after shutdown; to change map name, provide argument `-m <name>` or `--map_name <name>`
 
 
 ## Miscellaneous
@@ -104,4 +107,5 @@ port is 5900
     process the image to find the objects (bins)
     find a way to label two bins
 4. Try manipulate Occupancy Grid Map 
-5. Report
+5. Curve Detector for labelling the bins
+6. Report
