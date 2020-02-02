@@ -38,39 +38,29 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
 	nLasers = (msg->angle_max - msg->angle_min) / msg->angle_increment;
     desiredNLasers = DEG2RAD(desiredAngle)/msg->angle_increment;
-    ROS_INFO("Size of laser scan array: %i, size of offset: %i, angle_max: %f, angle_min: %f, range_max: %f, range_min: %f, angle_increment: %f", 
-        nLasers, desiredNLasers, msg->angle_max, msg->angle_min, msg->range_max, msg->range_min, msg->angle_increment);
+    //ROS_INFO("Size of laser scan array: %i, size of offset: %i, angle_max: %f, angle_min: %f, range_max: %f, range_min: %f, angle_increment: %f", 
+        //nLasers, desiredNLasers, msg->angle_max, msg->angle_min, msg->range_max, msg->range_min, msg->angle_increment);
 
-    // for (uint32_t laser_idx = 0; laser_idx < nLasers; ++laser_idx){
-    //     if (msg->ranges[laser_idx] > 0) {
-    //         minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
-    //     }
-    // }
-
+    minLaserDist = 10;
     if (desiredAngle * M_PI / 180 < msg->angle_max && -desiredAngle * M_PI / 180 > msg->angle_min) {
         for (uint32_t laser_idx = nLasers / 2 - desiredNLasers; laser_idx < nLasers / 2 + desiredNLasers; ++laser_idx){
-            if (msg->ranges[laser_idx] > 0) {
-                if (msg->ranges[laser_idx] == std::numeric_limits<float>::infinity()){
-                        ROS_INFO("MinLaserDist still : %f", minLaserDist);
-                    }
-                else {
+            if (msg->range_max > msg->ranges[laser_idx] > 0) {
                     minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
-                    ROS_INFO("MinLaserDist: %f", minLaserDist);
-                }
-            }
-            else {
-                ROS_INFO("MinLaserDist not updated < 0");
             }
         }
-    }
-    else {
+    } else {
         for (uint32_t laser_idx = 0; laser_idx < nLasers; ++laser_idx) {
             if (msg->range_max > msg->ranges[laser_idx] > 0) {
                 minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
             }
-            
         }
     }
+
+    if (minLaserDist == 10) {
+        ROS_INFO("Robot stuck in corner!");
+        minLaserDist = 2;
+    }
+    ROS_INFO("MinLaserDist: %f", minLaserDist);
 }
 
 void odomCallback (const nav_msgs::Odometry::ConstPtr& msg)
@@ -86,18 +76,14 @@ geometry_msgs::Twist wallFollower(float posX, float posY, float yaw, float minLa
 
     float desiredDistFromWall = 1;
     float currentDistFromWall = minLaserDist;
-    float dt = 0.1;
-    float kp = 1.0;
+    float kp = 2.0;
 
     float error = desiredDistFromWall - currentDistFromWall;
     float controlYaw = kp * error;
     ROS_INFO("Error: (%f) Control Yaw: %f", error, controlYaw);
-    if (controlYaw < -0.5) {
-        controlYaw = -0.5;
-    }
     output.angular.z = controlYaw;
 
-    float forwardSpeed = 0.3;
+    float forwardSpeed = 0.2;
     output.linear.x = forwardSpeed;
 
     return output;
