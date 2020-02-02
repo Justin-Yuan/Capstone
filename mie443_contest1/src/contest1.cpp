@@ -25,6 +25,8 @@ float posX = 0.0, posY = 0.0, yaw = 0.0;
 uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
 float minLaserDist = std::numeric_limits<float>::infinity();
+float minLeftLaserDist = std::numeric_limits<float>::infinity();
+float minRightLaserDist = std::numeric_limits<float>::infinity();
 int32_t nLasers=0, desiredNLasers=0, desiredAngle=5;
 float laserScanTime = 1.0;
 
@@ -43,20 +45,22 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
         nLasers, desiredNLasers, msg->angle_max, msg->angle_min, msg->range_max, msg->range_min, msg->angle_increment, msg->scan_time);
 
     minLaserDist = msg->range_max;
-    if (desiredAngle * M_PI / 180 < msg->angle_max && -desiredAngle * M_PI / 180 > msg->angle_min) {
-        for (uint32_t laser_idx = nLasers / 2 - desiredNLasers; laser_idx < nLasers / 2 + desiredNLasers; ++laser_idx){
-            if (msg->range_max > msg->ranges[laser_idx] > 0) {
-                    minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
-            }
-        }
-    } else {
-        for (uint32_t laser_idx = 0; laser_idx < nLasers; ++laser_idx) {
-            if (msg->range_max > msg->ranges[laser_idx] > 0) {
+    minLeftLaserDist = msg->range_max;
+    minRightLaserDist = msg->range_max;
+    for (uint32_t laser_idx = nLasers / 2 - desiredNLasers; laser_idx < nLasers / 2 + desiredNLasers; ++laser_idx){
+        if (msg->range_max > msg->ranges[laser_idx] > 0) {
                 minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
-            }
         }
     }
-    ROS_INFO("MinLaserDist: %f", minLaserDist);
+    for (uint32_t laser_idx = 0; laser_idx < nLasers/2; ++laser_idx){
+        if (msg->range_max > msg->ranges[laser_idx] > 0) {
+                minRightLaserDist = std::min(minRightLaserDist, msg->ranges[laser_idx]);
+        }
+        if (msg->range_max > msg->ranges[nLasers-laser_idx-1] > 0) {
+                minLeftLaserDist = std::min(minLeftLaserDist, msg->ranges[nLasers-laser_idx-1]);
+        }
+    }
+    ROS_INFO("MinLaserDist: %f, minLeftLaserDist: %f, minRightLaserDist: %f", minLaserDist, minLeftLaserDist, minRightLaserDist);
 }
 
 void odomCallback (const nav_msgs::Odometry::ConstPtr& msg)
