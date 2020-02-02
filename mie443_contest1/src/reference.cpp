@@ -22,7 +22,7 @@ double x, y;
 
 // Speed caps
 double linear_max = 0.15;
-double angular_max = pi / 6;
+double angular_max = PI / 6;
 
 // Bumper variables
 bool bumperLeft = 0, bumperCenter = 0, bumperRight = 0;
@@ -32,15 +32,15 @@ double laserRange = 10;
 double laserRange_Left = 10, laserRange_Right = 10;
 int laserSize = 0, laserOffset = 0, desiredAngle = 15;
 int right_ind = 0, left_ind = 0;
-int spin_counter = 0;
+int sPIn_counter = 0;
 double x_turn = 0, y_turn = 0;
 double x_last = 0, y_last = 0;
 
 // Misc constants
-double pi = 3.1416;
-double cos30 = cos(pi/6);
+// double PI = 3.1416;
+double cos30 = cos(PI/6);
 float exploreDist = 0.5;
-float exploreDist_lr = exploreDist_min * cos30; // FIXME: might actually need to be / instead of *
+float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be / instead of *
 float exploreDist_side = 1.0;
 int exploreAngle_bins = 12;
 int exploreAngle_size = 360 / exploreAngle_bins;
@@ -58,15 +58,15 @@ inline publishVelocity(float angular, float linear)
     vel.angular.z = angular;
     vel.linear.x = linear;
     vel_pub.publish(vel);
-    ros::spinOnce();
+    ros::sPInOnce();
 }
 
 inline double deg2rad(float angle)
 {
-    return degree *pi / 180;
+    return angle * PI / 180;
 }
 
-inline bool inRange(int bin, const vector<float> & binRange, front=false){
+inline bool inRange(int bin, const vector<float> & binRange, bool front=false){
     /**
      * Check if the bin is in the desired zone
      */
@@ -75,21 +75,6 @@ inline bool inRange(int bin, const vector<float> & binRange, front=false){
     }
     else {
         return bin > binRange[0] && bin < binRange[1];
-    }
-}
-
-void rotate2bin(int bin){
-    /**
-     * Command center of which rotate to perform
-     * @param  {int} bin : bin index
-     */
-    else if (bin < exploreAngle_bins / 2)
-    {
-        rotate2angle(bin * exploreAngle_size);
-    }
-    else
-    {
-        rotate2angle((exploreAngle_bins - bin) * exploreAngle_size, CCW = false);
     }
 }
 
@@ -106,14 +91,14 @@ void rotate2angle(float angle, bool CCW=true)
         angular = angular * -1;
 
     // constraints
-    ros::spinOnce();
+    ros::sPInOnce();
     currYaw = yaw;
     double rad = deg2rad(angle); // TODO: maybe move it to before passing to rotate
 
     // rotate until desired
     while (abs(yaw - currYaw) < rad)
     {
-        publishVelocity(angular, linear);
+        publishVelocity(angular, linear = 0.0);
     }
 }
 
@@ -135,6 +120,22 @@ void rotate2explore(bool CCW=true)
     }
 }
 
+void rotate2bin(int bin)
+{
+    /**
+     * Command center of which rotate to perform
+     * @param  {int} bin : bin index
+     */
+    if (bin < exploreAngle_bins / 2)
+    {
+        rotate2angle(bin * exploreAngle_size);
+    }
+    else
+    {
+        rotate2angle((exploreAngle_bins - bin) * exploreAngle_size, CCW = false);
+    }
+}
+
 // Correction function - the robot will rotate 360 degrees first. Then it will rotate to the direction that has the most space.
 // The robot should choose direction on its left or right side prior to the front side. Also, the robot will not turn back.
 void correction() {
@@ -144,12 +145,11 @@ void correction() {
     // Define variables to store maximum value
     int maxDist_front = 0, maxDist_front_idx = 0; // default is 0 zo that if things go weird, it just moves forward
     int maxDist_side = 0, maxDist_side_idx = 0;
-    int best_bin = 0;
 
     // Explore the front/left/right zones (no back zone!)
     for (int bin = 0; bin < exploreAngle_bins; bin++)
     {
-        ros::spinOnce();
+        ros::sPInOnce();
 
         // TODO: logic is fine, but might need to change the code appearance
         if (inRange(bin, exploreZone_front, front=true))
@@ -198,7 +198,7 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
 {
     // laserSize is 639 increments
     laserSize = (msg->angle_max - msg->angle_min) / msg->angle_increment;
-    laserOffset = desiredAngle * pi / (180 * msg->angle_increment);
+    laserOffset = desiredAngle * PI / (180 * msg->angle_increment);
 
     // Print laser scan info
     // ROS_INFO("Size of laser scan array: %i and size of offset: %i", laserSize,laserOffset);
@@ -207,7 +207,7 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
     // Define maximum laser range
     laserRange = 11;
     // Determine if the desired angle is lower than the laser angle
-    if (desiredAngle * pi / 180 < msg->angle_max && -desiredAngle * pi / 180 > msg->angle_min)
+    if (desiredAngle * PI / 180 < msg->angle_max && -desiredAngle * PI / 180 > msg->angle_min)
     {
         // Update front range
         for (int i = laserSize / 2 - laserOffset; i < laserSize / 2 + laserOffset; i++)
@@ -252,7 +252,7 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr &msg)
     posX = msg->pose.pose.position.x;
     posY = msg->pose.pose.position.y;
     yaw = tf::getYaw(msg->pose.pose.orientation);
-    // ROS_INFO("Position:(%f,%f) Orientation: %f Rad or %f degrees.",posX,posY,yaw,yaw*180/pi);
+    // ROS_INFO("Position:(%f,%f) Orientation: %f Rad or %f degrees.",posX,posY,yaw,yaw*180/PI);
 }
 
 int main(int argc, char **argv)
@@ -325,11 +325,11 @@ int main(int argc, char **argv)
         }
 
         // Print Robot Info
-        // ROS_INFO("Position:(%f,%f) Orientation: %f degrees. Range: % f, ", posX, posY, yaw * 180 / pi, laserRange);
+        // ROS_INFO("Position:(%f,%f) Orientation: %f degrees. Range: % f, ", posX, posY, yaw * 180 / PI, laserRange);
         // ROS_INFO("Range:%f", laserRange);
         // ROS_INFO("LeftIndex:%f,RightIndex: %f",left_ind, right_ind);
 
-        ros::spinOnce();
+        ros::sPInOnce();
 
         // .....**E-STOP DO NOT TOUCH**.......
         eStop.block();
@@ -345,7 +345,7 @@ int main(int argc, char **argv)
         //      y_turn = 0;
         //      correction();
         //  }
-        // max velocity=0.25, angular velocity=pi/6
+        // max velocity=0.25, angular velocity=PI/6
 
         // Bumper check
         if (bumperRight || bumperCenter || bumperLeft)
@@ -366,7 +366,7 @@ int main(int argc, char **argv)
                 vel.angular.z = angular;
                 vel.linear.x = linear;
                 vel_pub.publish(vel);
-                ros::spinOnce();
+                ros::sPInOnce();
             }
             linear = 0;
             if (bump == 1)
@@ -383,7 +383,7 @@ int main(int argc, char **argv)
                 vel.angular.z = angular;
                 vel.linear.x = linear;
                 vel_pub.publish(vel);
-                ros::spinOnce();
+                ros::sPInOnce();
             }
             linear = 0;
             // going back to the initial direction
