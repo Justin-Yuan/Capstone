@@ -23,3 +23,6 @@ include_directories(include ${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 # add the publisher example
 add_executable(contest1 src/contest1.cpp src/planners.cpp)
 target_link_libraries(contest1 ${catkin_LIBRARIES} ${OpenCV_LIB})
+
+add_executable(ros_occupancy_grid src/ros_occupancy_grid.cpp)
+target_link_libraries(ros_occupancy_grid ${catkin_LIBRARIES} ${OpenCV_LIB})
