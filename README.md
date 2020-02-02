@@ -68,5 +68,15 @@ port is 5900
 
 ## TODO LIST
 1. Basic Algorithm for the robot to run in simulation. E.G. Wall Following
-2. Run basic algorithm on real robot
-3. 
+2. Reference code. Transfer util functions to what we need: 
+    rotate
+    correction
+    laser callback
+    odometry callback
+    mode1 / mode2
+    general exploration algrithm
+3. Object detection :
+    get the image from gmapping 
+    process the image to find the objects (bins)
+    find a way to label two bins
+4. Try manipulate Occupancy Grid Map 
