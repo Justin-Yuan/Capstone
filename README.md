@@ -19,9 +19,18 @@ remember to setup workspace before running any contest package/code
 source catkin_ws/devel/setup.bash 
 ```
 
+### Kill ros processes (forcefully)
+```bash
+pkill -f ros
+```
+
+### Reset Gazebo (properly)
+http://answers.gazebosim.org/question/15085/gazebo-world-reset-using-ros/
+
 
 ## Launch 
 
+### Version 1
 simulation run for contest 1, for each of the following line, launsh in a separate terminal 
 ```bash
 roscore
@@ -37,6 +46,21 @@ rosrun mie443_contest1 contest1
 # optional, view subscribed messages (e.g. for bumper)
 rostopic echo /mobile_bash/events/bumper​
 ```
+
+### Version 2
+Note: First, remember to setup workspace before running any contest package/code (only once)
+```bash
+source catkin_ws/devel/setup.bash 
+```
+
+run simulation with 1 command 
+- execute `roscore` in separate terminal only once 
+- every time you want to run contest 1, go to **~/catkin_ws/src/Capstone/mie443_contest1** and launch 
+```bash
+bash run.sh 
+``` 
+to kill after finish running, press **Enter** in the launch 
+terminal (this will kill all child terminals)
 
 
 ## Miscellaneous
