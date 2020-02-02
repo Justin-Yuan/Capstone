@@ -9,16 +9,21 @@ geometry_msgs::Twist motionPlanner::wallFollower(float minLaserDist)
     float currentDistFromWall = minLaserDist;
     float kp = 2.0;
 
-    // Get yaw using P controller
+    // Get yaw using P controller. We set forward speed to a constant.
     float error = desiredDistFromWall - currentDistFromWall;
     float controlYaw = kp * error;
-    ROS_INFO("Error: (%f) Control Yaw: %f", error, controlYaw);
-    output.angular.z = controlYaw;
-
-    // Set forward speed to a constant
     float forwardSpeed = 0.2;
+
+    // If our laser scan input is too large, we maintain the last reasonable yaw input.
+    if ((controlYaw > 5)||(controlYaw < -5)) {
+        controlYaw = lastYaw;
+    }
+    lastYaw = controlYaw;
+    output.angular.z = controlYaw;
     output.linear.x = forwardSpeed;
 
+
+    ROS_INFO("Error: (%f), Control Yaw: %f, Forward Speed: %f", error, controlYaw, forwardSpeed);
     return output;
 }
 

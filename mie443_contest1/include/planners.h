@@ -31,6 +31,8 @@ private:
     const uint8_t *bumper;
     const float minLaserDist;
 
+    float lastYaw;
+
 public:
     // Initialize the return
     vector<float> output_vels;
@@ -47,6 +49,9 @@ public:
         // cout << "Class created, bumper type:" << type(bumper[0]) << endl;
         int num_vels = 2;
         output_vels = vector<float>(num_vels, 0.);
+
+        // Set initial last yaw
+        lastYaw = 1.0;
     }
 
     ~motionPlanner(){ }

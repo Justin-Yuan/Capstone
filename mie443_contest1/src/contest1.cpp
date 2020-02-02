@@ -41,7 +41,7 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     //ROS_INFO("Size of laser scan array: %i, size of offset: %i, angle_max: %f, angle_min: %f, range_max: %f, range_min: %f, angle_increment: %f", 
         //nLasers, desiredNLasers, msg->angle_max, msg->angle_min, msg->range_max, msg->range_min, msg->angle_increment);
 
-    minLaserDist = 10;
+    minLaserDist = msg->range_max;
     if (desiredAngle * M_PI / 180 < msg->angle_max && -desiredAngle * M_PI / 180 > msg->angle_min) {
         for (uint32_t laser_idx = nLasers / 2 - desiredNLasers; laser_idx < nLasers / 2 + desiredNLasers; ++laser_idx){
             if (msg->range_max > msg->ranges[laser_idx] > 0) {
@@ -54,11 +54,6 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
                 minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
             }
         }
-    }
-
-    if (minLaserDist == 10) {
-        ROS_INFO("Robot stuck in corner!");
-        minLaserDist = 2;
     }
     ROS_INFO("MinLaserDist: %f", minLaserDist);
 }
