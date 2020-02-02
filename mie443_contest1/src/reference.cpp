@@ -13,8 +13,8 @@
 using namespace std;
 
 //Debug mode
-bool debug = True;
-bool simulation = True;
+bool debug = true;
+bool simulation = true;
 
 //Define Global Variables
 double posX, posY, yaw, yaw_now;
@@ -23,10 +23,6 @@ double pi = 3.1416;
 
 //Define Maximum Speed
 double linear_max = 0.15;
-if (simulation)
-{
-    linear_max = 0.25
-}
 double angular_max = pi / 6;
 bool bumperLeft = 0, bumperCenter = 0, bumperRight = 0;
 
@@ -216,6 +212,10 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr &msg)
 
 int main(int argc, char **argv)
 {
+    if (simulation)
+    {
+        linear_max = 0.25;
+    }
     //Set Initial Mode
     int mode = 1;
     //Offset Calculation
