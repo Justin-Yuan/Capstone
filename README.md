@@ -107,4 +107,5 @@ port is 5900
     process the image to find the objects (bins)
     find a way to label two bins
 4. Try manipulate Occupancy Grid Map 
-5. Report
+5. Curve Detector for labelling the bins
+6. Report
