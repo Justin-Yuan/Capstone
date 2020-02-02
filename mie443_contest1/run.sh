@@ -8,6 +8,8 @@ set -m
 
 # options 
 EXECUTABLE="contest1"
+SAVE_MAP=false
+MAP_NAME="map"
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -17,6 +19,15 @@ key="$1"
 case $key in
     -e|--executable)
     EXECUTABLE="$2"
+    shift # past argument
+    shift # past value
+    ;;
+    -s|--save_map)
+    SAVE_MAP=true
+    shift # past bool argument
+    ;;
+    -m|--map_name)
+    MAP_NAME="$2"
     shift # past argument
     shift # past value
     ;;
@@ -58,10 +69,18 @@ terminator -T "control" -e "rosrun mie443_contest1 $EXECUTABLE" &
 # terminator -T "control" -e "sleep 5" &
 control_pid=$! 
 
-# wait and clean up  
+# wait for shutdown signal 
 echo Press ENTER to shutdown all processes
 read 
 echo Shutting down...
+
+# save map
+if [ "$SAVE_MAP" = true ] ; then
+    echo Saving map... 
+    rosrun map_server map_saver –f $MAP_NAME 
+fi
+
+# kill all spawned terminals 
 kill $(jobs -p)
 
 # wait $control_pid
