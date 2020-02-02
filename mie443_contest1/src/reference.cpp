@@ -13,8 +13,8 @@
 using namespace std;
 
 //Debug mode
-bool debug = True;
-bool simulation = True;
+bool debug = true;
+bool simulation = true;
 
 //Define Global Variables
 double posX, posY, yaw, yaw_now;
