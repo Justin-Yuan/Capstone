@@ -10,6 +10,9 @@ set -m
 EXECUTABLE="contest1"
 SAVE_MAP=false
 MAP_NAME="map"
+LOAD_SIM="roslaunch mie443_contest1 turtlebot_world.launch"
+LOAD_REAL="roslaunch turtlebot_bringup minimal.launch"
+LOAD_CMD=$LOAD_SIM
 
 POSITIONAL=()
 while [[ $# -gt 0 ]]
@@ -21,6 +24,10 @@ case $key in
     EXECUTABLE="$2"
     shift # past argument
     shift # past value
+    ;;
+    -r|--real)
+    LOAD_CMD=$LOAD_REAL
+    shift # past argument
     ;;
     -s|--save_map)
     SAVE_MAP=true
@@ -50,7 +57,8 @@ set -- "${POSITIONAL[@]}" # restore positional parameters
 # sleep 2 
 
 # load map and bot 
-terminator -T "world" -e "roslaunch mie443_contest1 turtlebot_world.launch; bash" &
+# terminator -T "world" -e "roslaunch mie443_contest1 turtlebot_world.launch; bash" &
+terminator -T "world" -e "$LOAD_CMD; bash" &
 world_pid=$!
 sleep 10 || exit
 
