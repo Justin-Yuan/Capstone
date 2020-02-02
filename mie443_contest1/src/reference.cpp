@@ -38,6 +38,7 @@ double x_last = 0, y_last = 0;
 
 // Misc constants
 // double PI = 3.1416;
+bool CW = false;
 double cos30 = cos(PI/6);
 float exploreDist = 0.5;
 float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be / instead of *
@@ -58,7 +59,7 @@ inline publishVelocity(float angular, float linear)
     vel.angular.z = angular;
     vel.linear.x = linear;
     vel_pub.publish(vel);
-    ros::sPInOnce();
+    ros::spinOnce();
 }
 
 inline double deg2rad(float angle)
@@ -91,14 +92,14 @@ void rotate2angle(float angle, bool CCW=true)
         angular = angular * -1;
 
     // constraints
-    ros::sPInOnce();
+    ros::spinOnce();
     currYaw = yaw;
     double rad = deg2rad(angle); // TODO: maybe move it to before passing to rotate
 
     // rotate until desired
     while (abs(yaw - currYaw) < rad)
     {
-        publishVelocity(angular, linear = 0.0);
+        publishVelocity(angular, 0.0);
     }
 }
 
@@ -116,7 +117,7 @@ void rotate2explore(bool CCW=true)
     // Currently: stop turning (ready to go forward linearly) if there's something far away enough
     while (laserRange < exploreDist || laserRange_Left < exploreDist_lr || laserRange_Right < exploreDist_lr)
     {
-        publishVelocity(angular, linear = 0.0);
+        publishVelocity(angular, 0.0);
     }
 }
 
@@ -132,7 +133,7 @@ void rotate2bin(int bin)
     }
     else
     {
-        rotate2angle((exploreAngle_bins - bin) * exploreAngle_size, CCW = false);
+        rotate2angle((exploreAngle_bins - bin) * exploreAngle_size, CW);
     }
 }
 
@@ -149,7 +150,7 @@ void correction() {
     // Explore the front/left/right zones (no back zone!)
     for (int bin = 0; bin < exploreAngle_bins; bin++)
     {
-        ros::sPInOnce();
+        ros::spinOnce();
 
         // TODO: logic is fine, but might need to change the code appearance
         if (inRange(bin, exploreZone_front, front=true))
@@ -329,7 +330,7 @@ int main(int argc, char **argv)
         // ROS_INFO("Range:%f", laserRange);
         // ROS_INFO("LeftIndex:%f,RightIndex: %f",left_ind, right_ind);
 
-        ros::sPInOnce();
+        ros::spinOnce();
 
         // .....**E-STOP DO NOT TOUCH**.......
         eStop.block();
@@ -366,13 +367,13 @@ int main(int argc, char **argv)
                 vel.angular.z = angular;
                 vel.linear.x = linear;
                 vel_pub.publish(vel);
-                ros::sPInOnce();
+                ros::spinOnce();
             }
             linear = 0;
             if (bump == 1)
                 rotate2angle(20);
             else if (bump == 2)
-                rotate2angle(20, CCW=false);
+                rotate2angle(20, CW);
 
             // Moving Forward
             linear = 0.1;
@@ -383,14 +384,14 @@ int main(int argc, char **argv)
                 vel.angular.z = angular;
                 vel.linear.x = linear;
                 vel_pub.publish(vel);
-                ros::sPInOnce();
+                ros::spinOnce();
             }
             linear = 0;
             // going back to the initial direction
             if (bump == 1)
                 rotate2angle(20);
             else if (bump == 2)
-                rotate2angle(20, CCW = false);
+                rotate2angle(20, CW);
         }
 
         // Free Space movement
