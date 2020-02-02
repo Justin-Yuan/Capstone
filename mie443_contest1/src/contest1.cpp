@@ -26,7 +26,7 @@ uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEven
 
 float minLaserDist = std::numeric_limits<float>::infinity();
 int32_t nLasers=0, desiredNLasers=0, desiredAngle=5;
-
+float laserScanTime = 1.0;
 
 void bumperCallback(const kobuki_msgs::BumperEvent::ConstPtr& msg)
 {
@@ -38,8 +38,9 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
 {
 	nLasers = (msg->angle_max - msg->angle_min) / msg->angle_increment;
     desiredNLasers = DEG2RAD(desiredAngle)/msg->angle_increment;
-    //ROS_INFO("Size of laser scan array: %i, size of offset: %i, angle_max: %f, angle_min: %f, range_max: %f, range_min: %f, angle_increment: %f", 
-        //nLasers, desiredNLasers, msg->angle_max, msg->angle_min, msg->range_max, msg->range_min, msg->angle_increment);
+    laserScanTime = msg->scan_time;
+    ROS_INFO("Size of laser scan array: %i, size of offset: %i, angle_max: %f, angle_min: %f, range_max: %f, range_min: %f, angle_increment: %f, scan_time: %f", 
+        nLasers, desiredNLasers, msg->angle_max, msg->angle_min, msg->range_max, msg->range_min, msg->angle_increment, msg->scan_time);
 
     minLaserDist = msg->range_max;
     if (desiredAngle * M_PI / 180 < msg->angle_max && -desiredAngle * M_PI / 180 > msg->angle_min) {
@@ -87,18 +88,19 @@ int main(int argc, char **argv)
     start = std::chrono::system_clock::now();
     uint64_t secondsElapsed = 0;
 
+    ros::spinOnce();
     motionPlanner planner(posX, posY, yaw, minLaserDist, bumper);
     while(ros::ok() && secondsElapsed <= 480) {
         ROS_INFO("Postion: (%f, %f) Orientation: %f degrees, MinLaserDist: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
-        ros::spinOnce();
 
         // Obtain movement command from planner
-        vel = planner.wallFollower(minLaserDist);
+        vel = planner.wallFollower(minLaserDist, loop_rate.expectedCycleTime().toSec());
         vel_pub.publish(vel);
 
         // The last thing to do is to update the timer.
         secondsElapsed = std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now()-start).count();
         loop_rate.sleep();
+        ros::spinOnce();
     }
 
     return 0;

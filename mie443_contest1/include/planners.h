@@ -31,14 +31,16 @@ private:
     const uint8_t *bumper;
     const float minLaserDist;
 
-    float lastYaw;
+    float prevYaw;
+    float prevError;
 
 public:
     // Initialize the return
     vector<float> output_vels;
 
     // Constructor
-    motionPlanner(float _posX, float _posY, float _yaw, float _laser, uint8_t *_bumper) : posX(_posX), posY(_posY), yaw(_yaw), minLaserDist(_laser), bumper(_bumper)
+    motionPlanner(float _posX, float _posY, float _yaw, float _laser, uint8_t *_bumper) : 
+        posX(_posX), posY(_posY), yaw(_yaw), minLaserDist(_laser), bumper(_bumper)
     {
         // Initialize the control variables
         cout << endl
@@ -50,14 +52,15 @@ public:
         int num_vels = 2;
         output_vels = vector<float>(num_vels, 0.);
 
-        // Set initial last yaw
-        lastYaw = 1.0;
+        // Set initial previous values.
+        prevYaw = 1.0;
+        prevError = 0.0;
     }
 
     ~motionPlanner(){ }
 
     // Functions
-    geometry_msgs::Twist wallFollower(float minLaserDist);
+    geometry_msgs::Twist wallFollower(float minLaserDist, float dt);
 
     vector<float> tutorialPlanner();
     // void tutorialPlanner();
