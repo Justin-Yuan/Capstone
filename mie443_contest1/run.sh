@@ -25,7 +25,7 @@ rviz_pid=$!
 # sleep 2 
 
 # control 
-terminator -T "control" -e "rosrun mie443_contest1 contest1" &
+terminator -T "control" -e "rosrun mie443_contest1 reference" &
 # terminator -T "control" -e "sleep 5" &
 control_pid=$! 
 

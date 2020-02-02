@@ -62,6 +62,9 @@ public:
     // Functions
     geometry_msgs::Twist wallFollower(float minLaserDist, float dt);
 
+    geometry_msgs::Twist threeRegion(float minLaserDist);
+
+
     vector<float> tutorialPlanner();
     // void tutorialPlanner();
 };

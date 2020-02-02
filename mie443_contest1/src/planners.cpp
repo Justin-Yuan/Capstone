@@ -34,6 +34,28 @@ geometry_msgs::Twist motionPlanner::wallFollower(float minLaserDist, float dt)
     return output;
 }
 
+geometry_msgs::Twist motionPlanner::threeRegion(float minLaserDist) 
+{
+    geometry_msgs::Twist output;
+
+    float closeThreshold = 0.5;
+
+    float currentDistFromWall = minLaserDist;
+    float controlYaw = 0;
+    float forwardSpeed = 0.25;
+
+    // If our laser scan input is too large, we maintain the last reasonable yaw input.
+    if (currentDistFromWall < closeThreshold) {
+        controlYaw = 4;
+        forwardSpeed = 0;
+    } else if (currentDistFromWall > 2) {
+        controlYaw = -1;
+    }
+    output.angular.z = controlYaw;
+    output.linear.x = forwardSpeed;
+    return output;
+}
+
 vector<float> motionPlanner::tutorialPlanner()
 {
     cout << "TutorialPlanner in use..." << endl;

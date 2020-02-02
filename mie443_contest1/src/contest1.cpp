@@ -94,7 +94,8 @@ int main(int argc, char **argv)
         ROS_INFO("Postion: (%f, %f) Orientation: %f degrees, MinLaserDist: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
 
         // Obtain movement command from planner
-        vel = planner.wallFollower(minLaserDist, loop_rate.expectedCycleTime().toSec());
+        //vel = planner.wallFollower(minLaserDist, loop_rate.expectedCycleTime().toSec());
+        vel = planner.threeRegion(minLaserDist);
         vel_pub.publish(vel);
 
         // The last thing to do is to update the timer.
