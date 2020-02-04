@@ -21,8 +21,8 @@ catkin_package()
 include_directories(include ${OpenCV_INCLUDE_DIRS} ${catkin_INCLUDE_DIRS})
 
 # reference run 
-# add_executable(reference src/reference.cpp src/planners.cpp)
-# target_link_libraries(reference ${catkin_LIBRARIES} ${OpenCV_LIB})
+add_executable(reference src/reference.cpp src/planners.cpp)
+target_link_libraries(reference ${catkin_LIBRARIES} ${OpenCV_LIB})
 
 # real contest1 run 
 add_executable(contest1 src/contest1.cpp src/planners.cpp)

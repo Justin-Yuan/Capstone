@@ -48,6 +48,9 @@ private:
     geometry_msgs::Twist wallFollower(float dt);
     geometry_msgs::Twist threeRegion();
 
+    void publishVelocity(float angular, float linear, bool spinOnce = false);
+    float dist(float startX, float startY, float endX, float endY);
+
     void bumperCallback(const kobuki_msgs::BumperEvent::ConstPtr& msg);
     void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
     void odomCallback (const nav_msgs::Odometry::ConstPtr& msg);
