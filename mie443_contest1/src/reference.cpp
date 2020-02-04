@@ -95,7 +95,7 @@ inline void setMode() {
     time_passed =
         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - time_start).count();
     random_prob = time_passed / time_total;
-
+ 
     std::bernoulli_distribution randomOrNot(random_prob);
     goRandom = randomOrNot(gen);
     if (goRandom) {
@@ -103,7 +103,7 @@ inline void setMode() {
     } else {
         mode = FORWARD;
     }
-    cout << time_passed << " sec, mode: " << mode << endl;
+    cout << time_passed << " sec, random prob: " << random_prob << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
