@@ -39,14 +39,16 @@ int spin_counter = 0;
 double x_turn = 0, y_turn = 0;
 double x_last = 0, y_last = 0;
 
-// Determine mode
+// Determine mode - and timing stuff
 int mode;
 #define FORWARD 1           // move to the furthest
 #define EXPLORE 2           // explore randomly
 #define time_step 30        // TODO: remember, time is in seconds!!!!!
 #define time_total 480
+std::chrono::time_point<std::chrono::system_clock> time_start = std::chrono::system_clock::now();
 uint64_t time_passed = 0;   // initialize the time variable
 float random_prob = 0.;     // the preferrance of exploring randomly increases over time
+// Start timing, again, in seconds!!
 bool goRandom;
 std::random_device device;
 std::mt19937 gen(device());
@@ -62,10 +64,10 @@ float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be 
 float exploreDist_side = 1.0;
 int exploreAngle_bins = 12;
 int exploreAngle_size = 360 / exploreAngle_bins;
-vector<float> exploreZone_front = {exploreAngle_bins * 7. / 8., exploreAngle_bins * 1. / 8.}; // > or <
-vector<float> exploreZone_left = {exploreAngle_bins * 1. / 8., exploreAngle_bins * 3. / 8.}; // > and <
-vector<float> exploreZone_back = {exploreAngle_bins * 3. / 8., exploreAngle_bins * 5. / 8.}; // > and <
-vector<float> exploreZone_right = {exploreAngle_bins * 5. / 8., exploreAngle_bins * 7. / 8.}; // > and <
+vector<double> exploreZone_front = {exploreAngle_bins * 7. / 8., exploreAngle_bins * 1. / 8.}; // > or <
+vector<double> exploreZone_left = {exploreAngle_bins * 1. / 8., exploreAngle_bins * 3. / 8.}; // > and <
+vector<double> exploreZone_back = {exploreAngle_bins * 3. / 8., exploreAngle_bins * 5. / 8.}; // > and <
+vector<double> exploreZone_right = {exploreAngle_bins * 5. / 8., exploreAngle_bins * 7. / 8.}; // > and <
 
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -91,7 +93,7 @@ inline void setMode() {
      */
     ros::spinOnce();
     time_passed =
-        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - start).count();
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - time_start).count();
     random_prob = time_passed / time_total;
 
     std::bernoulli_distribution randomOrNot(random_prob);
@@ -111,7 +113,7 @@ inline double deg2rad(float angle) {
     return angle * M_PI / 180;
 }
 
-inline bool inRange(int bin, const vector<float> & binRange, bool front=false){
+inline bool inRange(int bin, const vector<double> & binRange, bool front=false){
     /**
      * Check if the bin is in the desired zone
      */
@@ -302,9 +304,7 @@ int main(int argc, char **argv) {
         linear_max = 0.20;
     }
 
-    // Start timing, again, in seconds!!
-    std::chrono::time_point<std::chrono::system_clock> start;
-    start = std::chrono::system_clock::now();
+
 
     mode = FORWARD;
 
@@ -519,7 +519,7 @@ int main(int argc, char **argv) {
         publishVelocity(angular, linear);
         // The last thing to do is to update the timer.
         time_passed =
-            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - start).count();
+            std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - time_start).count();
     }
     return 0;
 }
