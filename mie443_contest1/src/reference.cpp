@@ -356,7 +356,7 @@ int main(int argc, char **argv) {
         // }
 
         // Reevaluate the mode every certain durtaion
-        cout time_passed << " " << time_last_update <<  " " << time_step << endl;
+        cout << time_passed << " " << time_last_update <<  " " << time_step << endl;
         if (time_passed - time_last_update >= time_step) setMode();
 
         if (mode == 2)
