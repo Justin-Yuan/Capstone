@@ -43,8 +43,8 @@ double x_last = 0, y_last = 0;
 int mode;
 #define FORWARD 1           // move to the furthest
 #define EXPLORE 2           // explore randomly
-#define time_step 30        // TODO: remember, time is in seconds!!!!!
-#define time_total 480
+#define time_step 30.       // TODO: remember, time is in seconds!!!!!
+#define time_total 480.
 std::chrono::time_point<std::chrono::system_clock> time_start = std::chrono::system_clock::now();
 uint64_t time_passed = 0;   // initialize the time variable
 float random_prob = 0.;     // the preferrance of exploring randomly increases over time
@@ -103,7 +103,7 @@ inline void setMode() {
     } else {
         mode = FORWARD;
     }
-    cout << time_passed << " sec, random prob: " << random_prob << endl;
+    cout << time_passed << " sec - random prob: " << random_prob << " - mode: " << moode << endl;
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -353,8 +353,10 @@ int main(int argc, char **argv) {
         // {
         //     mode = 2;
         // }
-        setMode();
-        
+
+        // Reevaluate the mode every certain durtaion
+        if (time_passed > time_step) setMode();
+
         if (mode == 2)
         {
             // In mode 2 Print information
