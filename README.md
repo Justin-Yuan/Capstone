@@ -66,6 +66,8 @@ terminal (this will kill all child terminals)
 - you can save map by enabling `-s` or `--save_map`, this will save the map named **map** after shutdown; to change map name, provide argument `-m <name>` or `--map_name <name>`
 - to run on real robot, enable `-r` or `--real`, this will bring up real turtlebot configuration instead of simulation 
 
+### Bringup turtlebot
+- roslaunch turtlebot_bringup minimal.launch #Initializes the TurtleBot base hardware
 
 ## Miscellaneous
 

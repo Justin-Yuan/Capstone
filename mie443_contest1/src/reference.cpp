@@ -6,11 +6,14 @@
 #include <eStop.h>
 #include <stdio.h>
 #include <cmath>
+#include <math.h>
 #include <iostream>
 #include <chrono>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_datatypes.h>
 using namespace std;
+using std::vector;
+
 
 // Debug mode
 bool debug = true;
@@ -27,7 +30,7 @@ double x, y;
 
 // Speed caps
 double linear_max = 0.15;
-double angular_max = PI / 6;
+double angular_max = M_PI / 6;
 
 // Bumper variables
 bool bumperLeft = 0, bumperCenter = 0, bumperRight = 0;
@@ -37,14 +40,15 @@ double laserRange = 10;
 double laserRange_Left = 10, laserRange_Right = 10;
 int laserSize = 0, laserOffset = 0, desiredAngle = 15;
 int right_ind = 0, left_ind = 0;
-int sPIn_counter = 0;
+int spin_counter = 0;
 double x_turn = 0, y_turn = 0;
 double x_last = 0, y_last = 0;
 
 // Misc constants
-// double PI = 3.1416;
+// double M_PI = 3.1415926535897932384626;
 bool CW = false;
-double cos30 = cos(PI/6);
+bool FRONT = true;
+double cos30 = cos(M_PI/6);
 float exploreDist = 0.5;
 float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be / instead of *
 float exploreDist_side = 1.0;
@@ -56,7 +60,7 @@ vector<int> exploreZone_back = {exploreAngle_bins * 3 / 8, exploreAngle_bins * 5
 vector<int> exploreZone_right = {exploreAngle_bins * 5 / 8, exploreAngle_bins * 7 / 8}; // > and <
 
 // Helper functions
-inline publishVelocity(float angular, float linear)
+inline void publishVelocity(float angular, float linear)
 {
     ros::NodeHandle node;
     ros::Publisher vel_pub = node.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
@@ -69,10 +73,10 @@ inline publishVelocity(float angular, float linear)
 
 inline double deg2rad(float angle)
 {
-    return angle * PI / 180;
+    return angle * M_PI / 180;
 }
 
-inline bool inRange(int bin, const vector<float> & binRange, bool front=false){
+inline bool inRange(int bin, const vector<int> & binRange, bool front=false){
     /**
      * Check if the bin is in the desired zone
      */
@@ -158,7 +162,7 @@ void correction() {
         ros::spinOnce();
 
         // TODO: logic is fine, but might need to change the code appearance
-        if (inRange(bin, exploreZone_front, front=true))
+        if (inRange(bin, exploreZone_front, FRONT))
         {
             if (laserRange > maxDist_front)
             {
@@ -204,7 +208,7 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
 {
     // laserSize is 639 increments
     laserSize = (msg->angle_max - msg->angle_min) / msg->angle_increment;
-    laserOffset = desiredAngle * PI / (180 * msg->angle_increment);
+    laserOffset = desiredAngle * M_PI / (180 * msg->angle_increment);
 
     // Print laser scan info
     // ROS_INFO("Size of laser scan array: %i and size of offset: %i", laserSize,laserOffset);
@@ -213,7 +217,7 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
     // Define maximum laser range
     laserRange = 11;
     // Determine if the desired angle is lower than the laser angle
-    if (desiredAngle * PI / 180 < msg->angle_max && -desiredAngle * PI / 180 > msg->angle_min)
+    if (desiredAngle * M_PI / 180 < msg->angle_max && -desiredAngle * M_PI / 180 > msg->angle_min)
     {
         // Update front range
         for (int i = laserSize / 2 - laserOffset; i < laserSize / 2 + laserOffset; i++)
@@ -258,7 +262,7 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr &msg)
     posX = msg->pose.pose.position.x;
     posY = msg->pose.pose.position.y;
     yaw = tf::getYaw(msg->pose.pose.orientation);
-    // ROS_INFO("Position:(%f,%f) Orientation: %f Rad or %f degrees.",posX,posY,yaw,yaw*180/PI);
+    // ROS_INFO("Position:(%f,%f) Orientation: %f Rad or %f degrees.",posX,posY,yaw,yaw*180/M_PI);
 }
 
 int main(int argc, char **argv)
@@ -335,7 +339,7 @@ int main(int argc, char **argv)
         }
 
         // Print Robot Info
-        // ROS_INFO("Position:(%f,%f) Orientation: %f degrees. Range: % f, ", posX, posY, yaw * 180 / PI, laserRange);
+        // ROS_INFO("Position:(%f,%f) Orientation: %f degrees. Range: % f, ", posX, posY, yaw * 180 / M_PI, laserRange);
         // ROS_INFO("Range:%f", laserRange);
         // ROS_INFO("LeftIndex:%f,RightIndex: %f",left_ind, right_ind);
 
@@ -355,7 +359,7 @@ int main(int argc, char **argv)
         //      y_turn = 0;
         //      correction();
         //  }
-        // max velocity=0.25, angular velocity=PI/6
+        // max velocity=0.25, angular velocity=M_PI/6
 
         // Bumper check
         if (bumperRight || bumperCenter || bumperLeft)
@@ -453,7 +457,7 @@ int main(int argc, char **argv)
             }
             else
             {
-                rotate2explore(CCW=false);
+                rotate2explore(CW);
             }
         }
         else
