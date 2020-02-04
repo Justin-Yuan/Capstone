@@ -16,6 +16,11 @@ using namespace std;
 bool debug = true;
 bool simulation = true;
 
+// Running mode
+int mode;
+#define STRAIGHT = 1;
+#define EXPLORE = 2;
+
 // Global variables
 double posX, posY, yaw, currYaw;
 double x, y;
@@ -258,15 +263,19 @@ void odomCallback(const nav_msgs::Odometry::ConstPtr &msg)
 
 int main(int argc, char **argv)
 {
+    // TODO: remember to turn this off for the actual contest
     if (simulation)
     {
         linear_max = 0.25;
     }
-    //Set Initial Mode
-    int mode = 1;
+    
+
+    mode = STRAIGHT;
+
     // Offset Calculation
     int left_ind_offset = left_ind - ((laserSize - 1) / 2);
     int right_ind_offset = ((laserSize - 1) / 2) - right_ind;
+    
     // ROS setup
     ros::init(argc, argv, "image_listener");
     ros::NodeHandle nh;
