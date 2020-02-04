@@ -14,10 +14,9 @@
 using namespace std;
 using std::vector;
 
-
 // Debug mode
 bool debug = true;
-bool simulation = true;
+bool simulation = true; // true;
 
 // Running mode
 int mode;
@@ -29,7 +28,7 @@ double posX, posY, yaw, currYaw;
 double x, y;
 
 // Speed caps
-double linear_max = 0.15;
+double linear_max = 0.20;
 double angular_max = M_PI / 6;
 
 // Bumper variables
@@ -46,9 +45,10 @@ double x_last = 0, y_last = 0;
 
 // Misc constants
 // double M_PI = 3.1415926535897932384626;
-bool CW = false;
-bool FRONT = true;
-double cos30 = cos(M_PI/6);
+#define CW false;
+#define FRONT = true;
+#define cos30 = cos(M_PI / 6);
+int explore_per_dist = 2;
 float exploreDist = 0.5;
 float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be / instead of *
 float exploreDist_side = 1.0;
@@ -255,10 +255,8 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
         laserRange_Right = 0;
 }
 
-// odometry call back function
 void odomCallback(const nav_msgs::Odometry::ConstPtr &msg)
 {
-    // Read Info from odom
     posX = msg->pose.pose.position.x;
     posY = msg->pose.pose.position.y;
     yaw = tf::getYaw(msg->pose.pose.orientation);
@@ -270,7 +268,7 @@ int main(int argc, char **argv)
     // TODO: remember to turn this off for the actual contest
     if (simulation)
     {
-        linear_max = 0.25;
+        linear_max = 0.20;
     }
     
 
@@ -331,7 +329,7 @@ int main(int argc, char **argv)
                      laserRange_Right);
         }
         // Correction counter
-        if (sqrt((posX - x_turn) * (posX - x_turn) + (posY - y_turn) * (posY - y_turn)) > 1.5 && mode == 2)
+        if (sqrt((posX - x_turn) * (posX - x_turn) + (posY - y_turn) * (posY - y_turn)) > explore_per_dist && mode == 2)
         {
             x_turn = posX;
             y_turn = posY;
