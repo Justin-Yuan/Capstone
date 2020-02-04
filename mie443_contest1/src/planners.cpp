@@ -5,7 +5,6 @@ void motionPlanner::step()
 {
     ros::spinOnce();
     checkBumpers();
-    //vel = planner.wallFollower(loop_rate.expectedCycleTime().toSec());
     threeRegion();
 }
 
@@ -46,42 +45,6 @@ void motionPlanner::checkBumpers()
         // else if (bumper[kobuki_msgs::BumperEvent::LEFT] == 1)
             // rotate2angle(20, CW);
     }
-}
-
-geometry_msgs::Twist motionPlanner::wallFollower(float dt) 
-{
-    /**
-     * Controls the robot to follow the wall. Uses three regions control.
-     * @param  {minLaserDist} float : the minimum value in msg->ranges from our laser scan - distance to closest wall.
-     * @param  {dt} float : the time between planner calls. Calculated from the loop_rate set in contest1.cpp
-     */
-    geometry_msgs::Twist output;
-
-    float desiredDistFromWall = 1;
-    float currentDistFromWall = minLaserDist;
-    float kp = 2.0;
-    float kd = 1.0;
-
-    // Control yaw using PD controller. We set forward speed to a constant.
-    float currError = desiredDistFromWall - currentDistFromWall;
-    float currErrorDeriv = (currError - prevError) / dt;
-
-    float pGain = kp * currError;
-    float dGain = kd * currErrorDeriv;
-    float controlYaw = pGain + dGain;
-    float forwardSpeed = 0.2;
-
-    // If our laser scan input is too large, we maintain the last reasonable yaw input.
-    if ((controlYaw > 5)||(controlYaw < -5)) 
-    {
-        controlYaw = prevYaw;
-    }
-    publishVelocity(controlYaw, forwardSpeed);
-
-    prevYaw = controlYaw;
-    prevError = currError;
-    ROS_INFO("Error: (%f), Error Derivative: (%f), Control Yaw: %f, Forward Speed: %f, Time Step: %f", 
-        currError, currErrorDeriv, controlYaw, forwardSpeed, dt);
 }
 
 geometry_msgs::Twist motionPlanner::threeRegion() 

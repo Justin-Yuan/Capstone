@@ -44,8 +44,6 @@ private:
 
     // Functions
     void checkBumpers();
-
-    geometry_msgs::Twist wallFollower(float dt);
     geometry_msgs::Twist threeRegion();
 
     void publishVelocity(float angular, float linear, bool spinOnce = false);
