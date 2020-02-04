@@ -47,16 +47,21 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     minLaserDist = msg->range_max;
     minLeftLaserDist = msg->range_max;
     minRightLaserDist = msg->range_max;
-    for (uint32_t laser_idx = nLasers / 2 - desiredNLasers; laser_idx < nLasers / 2 + desiredNLasers; ++laser_idx){
-        if (msg->range_max > msg->ranges[laser_idx] > 0) {
+    for (uint32_t laser_idx = nLasers / 2 - desiredNLasers; laser_idx < nLasers / 2 + desiredNLasers; ++laser_idx)
+    {
+        if (msg->range_max > msg->ranges[laser_idx] > 0) 
+        {
                 minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
         }
     }
-    for (uint32_t laser_idx = 0; laser_idx < nLasers/2; ++laser_idx){
-        if (msg->range_max > msg->ranges[laser_idx] > 0) {
+    for (uint32_t laser_idx = 0; laser_idx < nLasers/2; ++laser_idx)
+    {
+        if (msg->range_max > msg->ranges[laser_idx] > 0) 
+        {
                 minRightLaserDist = std::min(minRightLaserDist, msg->ranges[laser_idx]);
         }
-        if (msg->range_max > msg->ranges[nLasers-laser_idx-1] > 0) {
+        if (msg->range_max > msg->ranges[nLasers-laser_idx-1] > 0) 
+        {
                 minLeftLaserDist = std::min(minLeftLaserDist, msg->ranges[nLasers-laser_idx-1]);
         }
     }
@@ -78,13 +83,11 @@ int main(int argc, char **argv)
 
     ros::Subscriber bumper_sub = nh.subscribe("mobile_base/events/bumper", 10, &bumperCallback);
     ros::Subscriber laser_sub = nh.subscribe("scan", 10, &laserCallback);
+    ros::Subscriber odom = nh.subscribe("odom", 1, odomCallback);
 
     ros::Publisher vel_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
 
-    ros::Subscriber odom = nh.subscribe("odom", 1, odomCallback);
-
     ros::Rate loop_rate(10);
-
     geometry_msgs::Twist vel;
 
     // contest count down timer
@@ -94,7 +97,8 @@ int main(int argc, char **argv)
 
     ros::spinOnce();
     motionPlanner planner(posX, posY, yaw, minLaserDist, bumper);
-    while(ros::ok() && secondsElapsed <= 480) {
+    while(ros::ok() && secondsElapsed <= 480) 
+    {
         ROS_INFO("Postion: (%f, %f) Orientation: %f degrees, MinLaserDist: %f", posX, posY, RAD2DEG(yaw), minLaserDist);
 
         // Obtain movement command from planner

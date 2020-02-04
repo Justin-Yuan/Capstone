@@ -51,7 +51,7 @@ geometry_msgs::Twist motionPlanner::threeRegion(float minLaserDist)
     float closeThreshold = 0.5;
     float currentDistFromWall = minLaserDist;
     float controlYaw = 0;
-    float forwardSpeed = 0.25;
+    float forwardSpeed = 0.1;
 
     // If we turn outwards if we are too close to wall and we turn inwards if we are too far from wall.
     if (currentDistFromWall < closeThreshold) 
