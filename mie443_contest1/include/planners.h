@@ -27,20 +27,37 @@ using std::vector;
 class motionPlanner {
 // If we really want, we can have another "stupidPlanner" class inherenting from this one
 private:
-    const float posX, posY, yaw;
-    const uint8_t *bumper;
-    const float minLaserDist;
+    ros::NodeHandle nh;
+    ros::Publisher vel_pub;
+    ros::Subscriber bumper_sub, laser_sub, odom;
+    float posX = 0.0, posY = 0.0, yaw = 0.0;
+    uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
-    float prevYaw;
-    float prevError;
+    float minLaserDist = std::numeric_limits<float>::infinity();
+    float minLeftLaserDist = std::numeric_limits<float>::infinity();
+    float minRightLaserDist = std::numeric_limits<float>::infinity();
+    int32_t nLasers=0, desiredNLasers=0, desiredAngle=5;
+    float laserScanTime = 1.0;
+
+    float prevYaw = 1.0;
+    float prevError = 0.0;
+
+    // Functions
+    void checkBumpers();
+
+    geometry_msgs::Twist wallFollower(float dt);
+    geometry_msgs::Twist threeRegion();
+
+    void bumperCallback(const kobuki_msgs::BumperEvent::ConstPtr& msg);
+    void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
+    void odomCallback (const nav_msgs::Odometry::ConstPtr& msg);
 
 public:
     // Initialize the return
     vector<float> output_vels;
 
     // Constructor
-    motionPlanner(float _posX, float _posY, float _yaw, float _laser, uint8_t *_bumper) : 
-        posX(_posX), posY(_posY), yaw(_yaw), minLaserDist(_laser), bumper(_bumper)
+    motionPlanner()
     {
         // Initialize the control variables
         cout << endl
@@ -48,25 +65,18 @@ public:
              << "Class created" << endl
              << endl
              << endl;
-        // cout << "Class created, bumper type:" << type(bumper[0]) << endl;
-        int num_vels = 2;
-        output_vels = vector<float>(num_vels, 0.);
 
-        // Set initial previous values.
-        prevYaw = 1.0;
-        prevError = 0.0;
+        bumper_sub = nh.subscribe("mobile_base/events/bumper", 10, &motionPlanner::bumperCallback, this);
+        laser_sub = nh.subscribe("scan", 10, &motionPlanner::laserCallback, this);
+        odom = nh.subscribe("odom", 1, &motionPlanner::odomCallback, this);
+
+        vel_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
     }
 
     ~motionPlanner(){ }
 
     // Functions
-    geometry_msgs::Twist wallFollower(float minLaserDist, float dt);
-
-    geometry_msgs::Twist threeRegion(float minLaserDist);
-
-
-    vector<float> tutorialPlanner();
-    // void tutorialPlanner();
+    void step();
 };
 
 #endif

@@ -7,8 +7,8 @@
 set -m
 
 # options 
-# EXECUTABLE="contest1"
-EXECUTABLE="reference"
+EXECUTABLE="contest1"
+# EXECUTABLE="reference"
 SAVE_MAP=false
 MAP_NAME="map"
 LOAD_SIM="roslaunch mie443_contest1 turtlebot_world.launch"
