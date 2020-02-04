@@ -21,8 +21,8 @@ bool simulation = true;
 
 // Running mode
 int mode;
-#define STRAIGHT = 1;
-#define EXPLORE = 2;
+#define STRAIGHT 1;
+#define EXPLORE 2;
 
 // Global variables
 double posX, posY, yaw, currYaw;
