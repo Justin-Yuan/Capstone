@@ -47,7 +47,8 @@ int mode;
 #define time_total 480.
 std::chrono::time_point<std::chrono::system_clock> time_start = std::chrono::system_clock::now();
 uint64_t time_passed = 0;   // initialize the time variable
-float random_prob = 0.;     // the preferrance of exploring randomly increases over time
+uint64_t time_last_update = 0;
+float random_prob = 0.; // the preferrance of exploring randomly increases over time
 // Start timing, again, in seconds!!
 bool goRandom;
 std::random_device device;
@@ -103,7 +104,9 @@ inline void setMode() {
     } else {
         mode = FORWARD;
     }
-    cout << time_passed << " sec - random prob: " << random_prob << " - mode: " << moode << endl;
+    time_last_update = time_passed;
+
+    ROS_INFO("%f seconds, mode: %d", time_passed, mode);
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -329,8 +332,6 @@ int main(int argc, char **argv) {
     double linear = 0.0;
     geometry_msgs::Twist vel;
 
-    
-
     // Initial Mode
     mode = 2;
 
@@ -340,7 +341,7 @@ int main(int argc, char **argv) {
 
     chooseDirection();
 
-    while (ros::ok() && time_passed <= 480)
+    while (ros::ok() && time_passed <= time_total)
     {
         // Mode switch - 120-240s mode 1, else mode 2
         // Mode 1 - goes straight, stop when front range is too low.
@@ -355,7 +356,7 @@ int main(int argc, char **argv) {
         // }
 
         // Reevaluate the mode every certain durtaion
-        if (time_passed >= time_step) setMode();
+        if (time_passed - time_last_update >= time_step) setMode();
 
         if (mode == 2)
         {
