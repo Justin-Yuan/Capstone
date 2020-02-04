@@ -8,6 +8,7 @@
 #include <cmath>
 #include <math.h>
 #include <iostream>
+#include <random>
 #include <chrono>
 #include <nav_msgs/Odometry.h>
 #include <tf/transform_datatypes.h>
@@ -16,14 +17,7 @@ using std::vector;
 
 // Debug mode
 bool debug = true;
-bool simulation = true; // true;
-
-// Determine mode
-int mode;
-#define FORWARD 1 // move to the furthest
-#define EXPLORE 2 // explore randomly
-#define time_step 30 // TODO: remember, time is in seconds!!!!!
-uint64_t time_passed = 0; // initialize the time variable
+bool simulation = true;
 
 // Global variables
 double posX, posY, yaw, currYaw;
@@ -45,6 +39,18 @@ int spin_counter = 0;
 double x_turn = 0, y_turn = 0;
 double x_last = 0, y_last = 0;
 
+// Determine mode
+int mode;
+#define FORWARD 1           // move to the furthest
+#define EXPLORE 2           // explore randomly
+#define time_step 30        // TODO: remember, time is in seconds!!!!!
+#define time_total 480
+uint64_t time_passed = 0;   // initialize the time variable
+float random_prob = 0.;     // the preferrance of exploring randomly increases over time
+bool goRandom;
+std::random_device device;
+std::mt19937 gen(device());
+
 // Misc constants
 // double M_PI = 3.1415926535897932384626;
 #define CW false
@@ -61,7 +67,10 @@ vector<float> exploreZone_left = {exploreAngle_bins * 1. / 8., exploreAngle_bins
 vector<float> exploreZone_back = {exploreAngle_bins * 3. / 8., exploreAngle_bins * 5. / 8.}; // > and <
 vector<float> exploreZone_right = {exploreAngle_bins * 5. / 8., exploreAngle_bins * 7. / 8.}; // > and <
 
-// Helper functions
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Util functions //////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 inline void publishVelocity(float angular, float linear)
 {
     ros::NodeHandle node;
@@ -74,9 +83,30 @@ inline void publishVelocity(float angular, float linear)
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Mode decision  //////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+inline void setMode() {
+    /**
+     * Choose a mode depending on the time passed, all variables are global
+     */
+    ros::spinOnce();
+    time_passed =
+        std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - start).count();
+    random_prob = time_passed / time_total;
+
+    std::bernoulli_distribution randomOrNot(random_prob);
+    goRandom = randomOrNot(gen);
+    if (goRandom) {
+        mode = EXPLORE;
+    } else {
+        mode = FORWARD;
+    }
+    cout << time_passed << " sec, mode: " << mode << endl;
+}
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Rotation ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-
 inline double deg2rad(float angle) {
     return angle * M_PI / 180;
 }
@@ -315,14 +345,16 @@ int main(int argc, char **argv) {
         // Mode switch - 120-240s mode 1, else mode 2
         // Mode 1 - goes straight, stop when front range is too low.
         // Mode 2 - corrects the distance when it is going straight. Run correction function after it has passed a certain distance
-        if (time_passed > 120 && time_passed < 240)
-        {
-            mode = 1;
-        }
-        else
-        {
-            mode = 2;
-        }
+        // if (time_passed > 120 && time_passed < 240)
+        // {
+        //     mode = 1;
+        // }
+        // else
+        // {
+        //     mode = 2;
+        // }
+        setMode();
+        
         if (mode == 2)
         {
             // In mode 2 Print information
