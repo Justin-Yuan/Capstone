@@ -20,8 +20,8 @@ bool simulation = true; // true;
 
 // Running mode
 int mode;
-#define STRAIGHT 1;
-#define EXPLORE 2;
+#define STRAIGHT 1
+#define EXPLORE 2
 
 // Global variables
 double posX, posY, yaw, currYaw;
@@ -45,9 +45,9 @@ double x_last = 0, y_last = 0;
 
 // Misc constants
 // double M_PI = 3.1415926535897932384626;
-#define CW false;
-#define FRONT = true;
-#define cos30 = cos(M_PI / 6);
+#define CW false
+#define FRONT = true
+#define cos30 = cos(M_PI / 6)
 int explore_per_dist = 2;
 float exploreDist = 0.5;
 float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be / instead of *
