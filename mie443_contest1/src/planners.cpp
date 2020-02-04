@@ -5,7 +5,7 @@ void motionPlanner::step()
 {
     ros::spinOnce();
     checkBumpers();
-    //vel = planner.wallFollower(minLaserDist, loop_rate.expectedCycleTime().toSec());
+    //vel = planner.wallFollower(loop_rate.expectedCycleTime().toSec());
     threeRegion();
 }
 
@@ -14,8 +14,38 @@ void motionPlanner::step()
 
 void motionPlanner::checkBumpers()
 {
-    // TODO: Fill
-    return;
+    if (bumper[kobuki_msgs::BumperEvent::LEFT] == 1 || 
+        bumper[kobuki_msgs::BumperEvent::CENTER] == 1 || 
+        bumper[kobuki_msgs::BumperEvent::RIGHT] == 1)
+    {
+        float startX, startY;
+
+        // Maneuver backwards
+        startX = posX; startY = posY;
+        while (dist(startX, startY, posX, posY) < 0.15)
+        {
+           publishVelocity(-0.1 /* linear */, 0 /* angular */, true /* spinOnce */);
+        }
+
+        // Adjust angle away from obstacle
+        // if (bumper[kobuki_msgs::BumperEvent::RIGHT] == 1)
+        //     // rotate2angle(20);
+        // else if (bumper[kobuki_msgs::BumperEvent::LEFT] == 1)
+            // rotate2angle(20, CW);
+
+        // Maneuver forwards
+        startX = posX; startY = posY;
+        while (dist(startX, startY, posX, posY) < 0.15)
+        {
+           publishVelocity(0.1 /* linear */, 0 /* angular */, true /* spinOnce */);
+        }
+
+        // // Adjust angle back to original direction
+        // if (bumper[kobuki_msgs::BumperEvent::RIGHT] == 1)
+        //     // rotate2angle(20);
+        // else if (bumper[kobuki_msgs::BumperEvent::LEFT] == 1)
+            // rotate2angle(20, CW);
+    }
 }
 
 geometry_msgs::Twist motionPlanner::wallFollower(float dt) 
@@ -46,15 +76,12 @@ geometry_msgs::Twist motionPlanner::wallFollower(float dt)
     {
         controlYaw = prevYaw;
     }
-    output.angular.z = controlYaw;
-    output.linear.x = forwardSpeed;
-
+    publishVelocity(controlYaw, forwardSpeed);
 
     prevYaw = controlYaw;
     prevError = currError;
     ROS_INFO("Error: (%f), Error Derivative: (%f), Control Yaw: %f, Forward Speed: %f, Time Step: %f", 
         currError, currErrorDeriv, controlYaw, forwardSpeed, dt);
-    vel_pub.publish(output);
 }
 
 geometry_msgs::Twist motionPlanner::threeRegion() 
@@ -80,10 +107,35 @@ geometry_msgs::Twist motionPlanner::threeRegion()
     {
         controlYaw = -1;
     }
-    output.angular.z = controlYaw;
-    output.linear.x = forwardSpeed;
-    vel_pub.publish(output);
+    publishVelocity(controlYaw, forwardSpeed);
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Helper functions ////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+float motionPlanner::dist(float startX, float startY, float endX, float endY)
+{
+    return sqrt(pow(endX - startX, 2) + pow(endY - startY, 2));
+}
+
+void motionPlanner::publishVelocity(float angular, float linear, bool spinOnce /*= false*/)
+{
+    geometry_msgs::Twist vel;
+    vel.angular.z = angular;
+    vel.linear.x = linear;
+    vel_pub.publish(vel);
+
+    if (spinOnce) 
+    {
+        ros::spinOnce();
+    }
+}
+
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Callback functions //////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
 void motionPlanner::bumperCallback(const kobuki_msgs::BumperEvent::ConstPtr& msg)
 {
