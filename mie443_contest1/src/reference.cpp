@@ -36,7 +36,7 @@ double laserRange_Left = 10, laserRange_Right = 10;
 int laserSize = 0, laserOffset = 0, desiredAngle = 15;
 int right_ind = 0, left_ind = 0;
 int spin_counter = 0;
-double x_turn = 0, y_turn = 0;
+double lastX = 0, lastY = 0;
 double x_last = 0, y_last = 0;
 
 // Determine mode - and timing stuff
@@ -109,6 +109,11 @@ inline void setMode() {
     ROS_INFO("%f seconds, mode: %d", time_passed, mode);
 }
 
+inline double distTravelled(pastX, pastY) {
+    double diffX = posX - pastX;
+    double diffY = posY - pastY;
+    return sqrt(diffX*diffX, diffY*diffY);
+}
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Rotation ////////////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -307,14 +312,6 @@ int main(int argc, char **argv) {
         linear_max = 0.20;
     }
 
-
-
-    mode = FORWARD;
-
-    // Offset Calculation
-    int left_ind_offset = left_ind - ((laserSize - 1) / 2);
-    int right_ind_offset = ((laserSize - 1) / 2) - right_ind;
-    
     // ROS setup
     ros::init(argc, argv, "image_listener");
     ros::NodeHandle nh;
@@ -326,71 +323,64 @@ int main(int argc, char **argv) {
     ros::Subscriber odom = nh.subscribe("odom", 1, odomCallback);
     ros::Publisher vel_pub =
         nh.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
-
-    // Define speed variables
+    ///////////////////////////////////////////////////////////////////////////////
+    // Control code ///////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////////////
+    
+    // Initial velocity
     double angular = 0.0;
     double linear = 0.0;
     geometry_msgs::Twist vel;
 
-    // Initial Mode
-    mode = 2;
+    // Offset Calculation
+    int left_ind_offset = left_ind - ((laserSize - 1) / 2);
+    int right_ind_offset = ((laserSize - 1) / 2) - right_ind;
 
     // Distance Counter Setup
     x_last = posX;
     y_last = posY;
 
+    // Initial mode
+    mode = EXPLORE;
     chooseDirection();
 
     while (ros::ok() && time_passed <= time_total)
     {
-        // Mode switch - 120-240s mode 1, else mode 2
-        // Mode 1 - goes straight, stop when front range is too low.
-        // Mode 2 - corrects the distance when it is going straight. Run correction function after it has passed a certain distance
-        // if (time_passed > 120 && time_passed < 240)
-        // {
-        //     mode = 1;
-        // }
-        // else
-        // {
-        //     mode = 2;
-        // }
-
-        // Reevaluate the mode every certain durtaion
+        // Mode FORWARD - goes straight, stop when front range is too low.
+        // Mode EXPLORE - corrects the distance when it is going straight. Run correction function after it has passed a certain distance
+        // Re-evaluate the mode every certain durtaion
         if (time_passed - time_last_update >= time_step) setMode();
 
         if (mode == 2)
         {
             // In mode 2 Print information
-            ROS_INFO("LeftRange:%f,RightRange: %f", laserRange_Left,
-                     laserRange_Right);
-        }
-        // Correction counter
-        if (sqrt((posX - x_turn) * (posX - x_turn) + (posY - y_turn) * (posY - y_turn)) > explore_per_dist && mode == 2)
-        {
-            x_turn = posX;
-            y_turn = posY;
-            chooseDirection();
+            ROS_INFO("LeftRange:%f,RightRange: %f", laserRange_Left, laserRange_Right);
+            if (distTravelled(lastX, lastY) > explore_per_dist)
+            {
+                lastX = posX;
+                lastY = posY;
+                chooseDirection();
+            }
         }
 
-        // Print Robot Info
+        // TODO: Delete this code if needed
         // ROS_INFO("Position:(%f,%f) Orientation: %f degrees. Range: % f, ", posX, posY, yaw * 180 / M_PI, laserRange);
         // ROS_INFO("Range:%f", laserRange);
         // ROS_INFO("LeftIndex:%f,RightIndex: %f",left_ind, right_ind);
 
         ros::spinOnce();
-
-        // .....**E-STOP DO NOT TOUCH**.......
         eStop.block();
-        // ...................................
+        
+        // TODO: Delete this code if needed
         // Distance between correction - Newer counter (used for testing purposes in smaller maze)
-        //  x_turn = x_turn + abs(posX - x_last);
-        //  y_turn = y_turn + abs(posY - y_last);
+        //  lastX = lastX + abs(posX - x_last);
+        //  lastY = lastY + abs(posY - y_last);
         //  x_last = posX;
         //  y_last = posY;
-        //  if (sqrt((x_turn * x_turn) + (y_turn * y_turn)) > 1.5 && mode == 2)
+        //  if (sqrt((lastX * lastX) + (lastY * lastY)) > 1.5 && mode == 2)
         //  {
-        //      x_turn = 0;
-        //      y_turn = 0;
+        //      lastX = 0;
+        //      lastY = 0;
         //      chooseDirection();
         //  }
         // max velocity=0.25, angular velocity=M_PI/6
