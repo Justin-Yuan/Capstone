@@ -7,7 +7,8 @@
 set -m
 
 # options 
-EXECUTABLE="contest1"
+# EXECUTABLE="contest1"
+EXECUTABLE="reference"
 SAVE_MAP=false
 MAP_NAME="map"
 LOAD_SIM="roslaunch mie443_contest1 turtlebot_world.launch"
@@ -73,7 +74,7 @@ rviz_pid=$!
 # sleep 2 
 
 # control 
-terminator -T "control" -e "rosrun mie443_contest1 $EXECUTABLE" &
+terminator -T "control" -e "rosrun mie443_contest1 $EXECUTABLE; bash" &
 # terminator -T "control" -e "sleep 5" &
 control_pid=$! 
 
