@@ -355,7 +355,7 @@ int main(int argc, char **argv) {
         // }
 
         // Reevaluate the mode every certain durtaion
-        if (time_passed > time_step) setMode();
+        if (time_passed >= time_step) setMode();
 
         if (mode == 2)
         {
