@@ -24,7 +24,7 @@ double posX, posY, yaw, currYaw;
 double x, y;
 
 // Speed caps
-double linear_max = 0.20;
+double linear_max = 0.2;
 double angular_max = M_PI / 6;
 
 // Bumper variables
