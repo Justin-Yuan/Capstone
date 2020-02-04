@@ -46,8 +46,8 @@ double x_last = 0, y_last = 0;
 // Misc constants
 // double M_PI = 3.1415926535897932384626;
 #define CW false
-#define FRONT = true
-#define cos30 = cos(M_PI / 6)
+#define FRONT true
+#define cos30 cos(M_PI / 6)
 int explore_per_dist = 2;
 float exploreDist = 0.5;
 float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be / instead of *

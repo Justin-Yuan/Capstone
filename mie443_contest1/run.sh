@@ -86,7 +86,7 @@ echo Shutting down...
 # save map
 if [ "$SAVE_MAP" = true ] ; then
     echo Saving map... 
-    rosrun map_server map_saver –f $MAP_NAME 
+    rosrun map_server map_saver -f $MAP_NAME 
 fi
 
 # kill all spawned terminals 
