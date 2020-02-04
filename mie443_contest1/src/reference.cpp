@@ -18,10 +18,12 @@ using std::vector;
 bool debug = true;
 bool simulation = true; // true;
 
-// Running mode
+// Determine mode
 int mode;
-#define STRAIGHT 1
-#define EXPLORE 2
+#define FORWARD 1 // move to the furthest
+#define EXPLORE 2 // explore randomly
+#define time_step 30 // TODO: remember, time is in seconds!!!!!
+uint64_t time_passed = 0; // initialize the time variable
 
 // Global variables
 double posX, posY, yaw, currYaw;
@@ -54,10 +56,10 @@ float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be 
 float exploreDist_side = 1.0;
 int exploreAngle_bins = 12;
 int exploreAngle_size = 360 / exploreAngle_bins;
-vector<int> exploreZone_front = {exploreAngle_bins * 7 / 8, exploreAngle_bins * 1 / 8}; // > or <
-vector<int> exploreZone_left = {exploreAngle_bins * 1 / 8, exploreAngle_bins * 3 / 8}; // > and <
-vector<int> exploreZone_back = {exploreAngle_bins * 3 / 8, exploreAngle_bins * 5 / 8}; // > and <
-vector<int> exploreZone_right = {exploreAngle_bins * 5 / 8, exploreAngle_bins * 7 / 8}; // > and <
+vector<float> exploreZone_front = {exploreAngle_bins * 7. / 8., exploreAngle_bins * 1. / 8.}; // > or <
+vector<float> exploreZone_left = {exploreAngle_bins * 1. / 8., exploreAngle_bins * 3. / 8.}; // > and <
+vector<float> exploreZone_back = {exploreAngle_bins * 3. / 8., exploreAngle_bins * 5. / 8.}; // > and <
+vector<float> exploreZone_right = {exploreAngle_bins * 5. / 8., exploreAngle_bins * 7. / 8.}; // > and <
 
 // Helper functions
 inline void publishVelocity(float angular, float linear)
@@ -71,12 +73,15 @@ inline void publishVelocity(float angular, float linear)
     ros::spinOnce();
 }
 
-inline double deg2rad(float angle)
-{
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Rotation ////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+inline double deg2rad(float angle) {
     return angle * M_PI / 180;
 }
 
-inline bool inRange(int bin, const vector<int> & binRange, bool front=false){
+inline bool inRange(int bin, const vector<float> & binRange, bool front=false){
     /**
      * Check if the bin is in the desired zone
      */
@@ -88,8 +93,7 @@ inline bool inRange(int bin, const vector<int> & binRange, bool front=false){
     }
 }
 
-void rotate2angle(float angle, bool CCW=true)
-{
+void rotate2angle(float angle, bool CCW=true) {
     /**
      * Rotate the robot to disred angle
      * @param  {degree} float : degree in degrees
@@ -112,8 +116,7 @@ void rotate2angle(float angle, bool CCW=true)
     }
 }
 
-void rotate2explore(bool CCW=true)
-{
+void rotate2explore(bool CCW=true) {
     /**
      * Rotate the robot until it is heading to a further wall/object
      * @param  {CCW} bool : default rotation is CCW == turn left, set to false if need to turn right
@@ -148,7 +151,7 @@ void rotate2bin(int bin)
 
 // Correction function - the robot will rotate 360 degrees first. Then it will rotate to the direction that has the most space.
 // The robot should choose direction on its left or right side prior to the front side. Also, the robot will not turn back.
-void correction() {
+void chooseDirection() {
     /**
      * Rotate and choose direction to explore
      */
@@ -192,10 +195,10 @@ void correction() {
     }
 }
 
-
-// Bumper call back function
-void bumperCallback(const kobuki_msgs::BumperEvent msg)
-{
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Sensors ////////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+void bumperCallback(const kobuki_msgs::BumperEvent msg) {
     if (msg.bumper == 0)
         bumperLeft = !bumperLeft;
     else if (msg.bumper == 1)
@@ -203,9 +206,9 @@ void bumperCallback(const kobuki_msgs::BumperEvent msg)
     else if (msg.bumper == 2)
         bumperRight = !bumperRight;
 }
-// Laser callback function
-void laserCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
-{
+
+// FIXME: change this function to our own
+void laserCallback(const sensor_msgs::LaserScan::ConstPtr &msg) {
     // laserSize is 639 increments
     laserSize = (msg->angle_max - msg->angle_min) / msg->angle_increment;
     laserOffset = desiredAngle * M_PI / (180 * msg->angle_increment);
@@ -255,24 +258,25 @@ void laserCallback(const sensor_msgs::LaserScan::ConstPtr &msg)
         laserRange_Right = 0;
 }
 
-void odomCallback(const nav_msgs::Odometry::ConstPtr &msg)
-{
+void odomCallback(const nav_msgs::Odometry::ConstPtr &msg) {
     posX = msg->pose.pose.position.x;
     posY = msg->pose.pose.position.y;
     yaw = tf::getYaw(msg->pose.pose.orientation);
     // ROS_INFO("Position:(%f,%f) Orientation: %f Rad or %f degrees.",posX,posY,yaw,yaw*180/M_PI);
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     // TODO: remember to turn this off for the actual contest
     if (simulation)
     {
         linear_max = 0.20;
     }
-    
 
-    mode = STRAIGHT;
+    // Start timing, again, in seconds!!
+    std::chrono::time_point<std::chrono::system_clock> start;
+    start = std::chrono::system_clock::now();
+
+    mode = FORWARD;
 
     // Offset Calculation
     int left_ind_offset = left_ind - ((laserSize - 1) / 2);
@@ -295,10 +299,7 @@ int main(int argc, char **argv)
     double linear = 0.0;
     geometry_msgs::Twist vel;
 
-    // Set timer
-    std::chrono::time_point<std::chrono::system_clock> start;
-    start = std::chrono::system_clock::now(); /* start timer */
-    uint64_t secondsElapsed = 0;              //  the timer just started, so we know it is less than 480, no need to check.int time_last = 0;
+    
 
     // Initial Mode
     mode = 2;
@@ -307,14 +308,14 @@ int main(int argc, char **argv)
     x_last = posX;
     y_last = posY;
 
-    correction();
+    chooseDirection();
 
-    while (ros::ok() && secondsElapsed <= 480)
+    while (ros::ok() && time_passed <= 480)
     {
         // Mode switch - 120-240s mode 1, else mode 2
         // Mode 1 - goes straight, stop when front range is too low.
         // Mode 2 - corrects the distance when it is going straight. Run correction function after it has passed a certain distance
-        if (secondsElapsed > 120 && secondsElapsed < 240)
+        if (time_passed > 120 && time_passed < 240)
         {
             mode = 1;
         }
@@ -333,7 +334,7 @@ int main(int argc, char **argv)
         {
             x_turn = posX;
             y_turn = posY;
-            correction();
+            chooseDirection();
         }
 
         // Print Robot Info
@@ -355,7 +356,7 @@ int main(int argc, char **argv)
         //  {
         //      x_turn = 0;
         //      y_turn = 0;
-        //      correction();
+        //      chooseDirection();
         //  }
         // max velocity=0.25, angular velocity=M_PI/6
 
@@ -375,10 +376,7 @@ int main(int argc, char **argv)
             while (sqrt((posX - x) * (posX - x) + (posY - y) * (posY -
                                                                 y)) < 0.15)
             {
-                vel.angular.z = angular;
-                vel.linear.x = linear;
-                vel_pub.publish(vel);
-                ros::spinOnce();
+               publishVelocity(linear, angular);
             }
             linear = 0;
             if (bump == 1)
@@ -392,10 +390,7 @@ int main(int argc, char **argv)
             y = posY;
             while (sqrt((posX - x) * (posX - x) + (posY - y) * (posY - y)) < 0.15)
             {
-                vel.angular.z = angular;
-                vel.linear.x = linear;
-                vel_pub.publish(vel);
-                ros::spinOnce();
+                publishVelocity(linear, angular);
             }
             linear = 0;
             // going back to the initial direction
@@ -491,7 +486,7 @@ int main(int argc, char **argv)
         // write the defined speed to the robot
         publishVelocity(angular, linear);
         // The last thing to do is to update the timer.
-        secondsElapsed =
+        time_passed =
             std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - start).count();
     }
     return 0;
