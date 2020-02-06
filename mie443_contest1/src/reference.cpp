@@ -382,13 +382,13 @@ int main(int argc, char **argv) {
             x_turn = posX;
             y_turn = posY;
 
-            // buffer
-            startX = posX; startY = posY;
-            while (dist(startX, startY, posX, posY) < 0.05)
-            {
-            publishVelocity(0.1 /* linear */, 0 /* angular */, true /* spinOnce */);
-            }
-            // buffer end
+            // // buffer
+            // startX = posX; startY = posY;
+            // while (dist(startX, startY, posX, posY) < 0.05)
+            // {
+            // publishVelocity(0.1 /* linear */, 0 /* angular */, true /* spinOnce */);
+            // }
+            // // buffer end
             
             chooseDirection();
         }
