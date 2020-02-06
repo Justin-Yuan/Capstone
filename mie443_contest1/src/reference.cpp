@@ -381,9 +381,18 @@ int main(int argc, char **argv) {
         {
             x_turn = posX;
             y_turn = posY;
-            buffer_for_explore();
+
+            // buffer
+            startX = posX; startY = posY;
+            while (dist(startX, startY, posX, posY) < 0.05)
+            {
+            publishVelocity(0.1 /* linear */, 0 /* angular */, true /* spinOnce */);
+            }
+            // buffer end
+            
             chooseDirection();
         }
+
 
         // Print Robot Info
         // ROS_INFO("Position:(%f,%f) Orientation: %f degrees. Range: % f, ", posX, posY, yaw * 180 / M_PI, laserRange);
@@ -494,12 +503,12 @@ int main(int argc, char **argv) {
             // Determine which side has more space
             if (laserRange_Right < laserRange_Left)
             {
-                buffer_for_explore();
+                // buffer_for_explore();
                 rotate2explore();
             }
             else
             {
-                buffer_for_explore();
+                // buffer_for_explore();
                 rotate2explore(CW);
             }
         }
