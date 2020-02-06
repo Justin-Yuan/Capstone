@@ -184,6 +184,17 @@ void rotate2bin(int bin)
     }
 }
 
+void buffer_for_explore() {
+    /*
+    Before exploring/chooseDirection, instead of suddenly stop and rotate, slowly decrease the speed and stop for ~0.1m, this might avoid noise induced.
+    */
+    startX = posX; startY = posY;
+        while (dist(startX, startY, posX, posY) < 0.05)
+        {
+           publishVelocity(0.1 /* linear */, 0 /* angular */, true /* spinOnce */);
+        }
+}
+
 // Correction function - the robot will rotate 360 degrees first. Then it will rotate to the direction that has the most space.
 // The robot should choose direction on its left or right side prior to the front side. Also, the robot will not turn back.
 void chooseDirection() {
@@ -370,6 +381,7 @@ int main(int argc, char **argv) {
         {
             x_turn = posX;
             y_turn = posY;
+            buffer_for_explore();
             chooseDirection();
         }
 
@@ -482,10 +494,12 @@ int main(int argc, char **argv) {
             // Determine which side has more space
             if (laserRange_Right < laserRange_Left)
             {
+                buffer_for_explore();
                 rotate2explore();
             }
             else
             {
+                buffer_for_explore();
                 rotate2explore(CW);
             }
         }
