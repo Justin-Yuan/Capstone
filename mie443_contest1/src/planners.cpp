@@ -152,7 +152,7 @@ void motionPlanner::checkBumpers()
         startX = posX; startY = posY;
         while (dist(startX, startY, posX, posY) < 0.15)
         {
-           publishVelocity(-0.1 /* linear */, 0 /* angular */, true /* spinOnce */);
+           publishVelocity(0 /* angular */, -0.1 /* linear */, true /* spinOnce */);
         }
 
         // Adjust angle away from obstacle
@@ -165,7 +165,7 @@ void motionPlanner::checkBumpers()
         startX = posX; startY = posY;
         while (dist(startX, startY, posX, posY) < 0.15)
         {
-           publishVelocity(0.1 /* linear */, 0 /* angular */, true /* spinOnce */);
+           publishVelocity(0 /* angular */, 0.1 /* linear */, true /* spinOnce */);
         }
 
         // // Adjust angle back to original direction
