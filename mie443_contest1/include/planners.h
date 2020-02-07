@@ -92,7 +92,7 @@ private:
 
     // Stopping
     float obstacleDist = 0.6;
-    float obstacleDist_side = 1.0;
+    float obstacleDist_side = 0.7;
 
     // Exploration
     int explore_per_dist = 2;

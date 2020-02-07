@@ -32,7 +32,6 @@ void motionPlanner::referenceMain()
     int right_ind_offset = ((laserSize - 1) / 2) - right_ind;
 
     // Reevaluate the mode every certain durtaion
-    cout << time_passed << " " << time_last_update <<  " " << time_step << endl;
     if (time_passed - time_last_update >= time_step) setMode();
 
     ROS_INFO("Current Mode: %d, LeftRange: %f, RightRange: %f", mode, minLeftLaserDist, minRightLaserDist);
