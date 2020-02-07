@@ -146,6 +146,8 @@ void motionPlanner::checkBumpers()
         bumper[kobuki_msgs::BumperEvent::RIGHT] == 1)
     {
         float startX, startY;
+        bool left = bumper[kobuki_msgs::BumperEvent::LEFT] == 1;
+        bool right = bumper[kobuki_msgs::BumperEvent::RIGHT] == 1;
 
         // Maneuver backwards
         startX = posX; startY = posY;
@@ -155,9 +157,9 @@ void motionPlanner::checkBumpers()
         }
 
         // Adjust angle away from obstacle
-        if (bumper[kobuki_msgs::BumperEvent::RIGHT] == 1)
+        if (right)
             rotate2angle(20);
-        else if (bumper[kobuki_msgs::BumperEvent::LEFT] == 1)
+        else if (left)
             rotate2angle(20, CW);
 
         // Maneuver forwards
@@ -168,9 +170,9 @@ void motionPlanner::checkBumpers()
         }
 
         // // Adjust angle back to original direction
-        if (bumper[kobuki_msgs::BumperEvent::RIGHT] == 1)
+        if (right)
             rotate2angle(20);
-        else if (bumper[kobuki_msgs::BumperEvent::LEFT] == 1)
+        else if (left)
             rotate2angle(20, CW);
     }
 }
