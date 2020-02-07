@@ -53,8 +53,6 @@ private:
     float minRightLaserDist = std::numeric_limits<float>::infinity();
     int32_t nLasers=0, desiredNLasers=0;
     float laserScanTime = 1.0;
-    // double laserRange = 10;
-    // double laserRange_Left = 10, laserRange_Right = 10;
     int laserSize = 0, laserOffset = 0, desiredAngle = 15;
     int right_ind = 0, left_ind = 0;
     int spin_counter = 0;
@@ -80,7 +78,7 @@ private:
     //   // initialize once per thread
     //   thread_local static std::random_device device;
     //   thread_local static std::mt19937 sgen(device());
-    //   return sgen;  
+    //   return sgen;
     // }
 
     // Misc constants
@@ -91,6 +89,7 @@ private:
     #define turnBack 180
 
     // Stopping
+    float bumperPullbackDist = 0.18;
     float obstacleDist = 0.6;
     float obstacleDist_side = 0.7;
 
