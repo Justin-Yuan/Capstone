@@ -89,16 +89,29 @@ private:
     #define CW false
     #define FRONT true
     #define cos30 cos(M_PI / 6)
+    #define turnBack 180
+
+    // Stopping
+    float obstacleDist = 0.6;
+    float obstacleDist_side = 1.0;
+
+    // Exploration
     int explore_per_dist = 2;
     float exploreDist = 0.5;
     float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be / instead of *
     float exploreDist_side = 1.0;
     int exploreAngle_bins = 12;
     int exploreAngle_size = 360 / exploreAngle_bins;
+    // Divide into 4 groups evenly
     vector<double> exploreZone_front = {exploreAngle_bins * 7. / 8., exploreAngle_bins * 1. / 8.}; // > or <
     vector<double> exploreZone_left = {exploreAngle_bins * 1. / 8., exploreAngle_bins * 3. / 8.}; // > and <
     vector<double> exploreZone_back = {exploreAngle_bins * 3. / 8., exploreAngle_bins * 5. / 8.}; // > and <
     vector<double> exploreZone_right = {exploreAngle_bins * 5. / 8., exploreAngle_bins * 7. / 8.}; // > and <
+    // // Divide into uneven groups
+    // vector<double> exploreZone_front = {exploreAngle_bins * 6. / 8., exploreAngle_bins * 2. / 8.}; // > or <
+    // vector<double> exploreZone_left = {exploreAngle_bins * 2. / 8., exploreAngle_bins * 3. / 8.};  // > and <
+    // vector<double> exploreZone_back = {exploreAngle_bins * 3. / 8., exploreAngle_bins * 5. / 8.};  // > and <
+    // vector<double> exploreZone_right = {exploreAngle_bins * 5. / 8., exploreAngle_bins * 6. / 8.}; // > and <
 
     // Planning Functions
     void referenceMain();

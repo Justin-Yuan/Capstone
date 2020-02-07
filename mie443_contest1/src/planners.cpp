@@ -311,13 +311,16 @@ void motionPlanner::chooseDirection() {
         rotate2angle(exploreAngle_size);
     }
 
-    // Prefers to turn to the side in this mode
-    if (maxDist_side > exploreDist_side)
-    {
+    if (maxDist_front < obstacleDist && maxDist_side < obstacleDist_side)
+    { // Turn back around if its a dead end
+        rotate2angle(turnBack);
+    }
+    else if (maxDist_side > exploreDist_side)
+    { // Prefers to turn to the side in this mode
         rotate2bin(maxDist_side_idx);
     }
     else
-    {
+    { // If neither, go forward
         rotate2bin(maxDist_front_idx);
     }
 }
