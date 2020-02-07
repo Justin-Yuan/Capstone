@@ -35,7 +35,7 @@ void motionPlanner::referenceMain()
     if (time_passed - time_last_update >= time_step) setMode();
 
     ROS_INFO("Current Mode: %d, LeftRange: %f, RightRange: %f", mode, minLeftLaserDist, minRightLaserDist);
-    
+
     // Correction counter
     if (sqrt((posX - x_turn) * (posX - x_turn) + (posY - y_turn) * (posY - y_turn)) > explore_per_dist && mode == 2)
     {
@@ -141,42 +141,53 @@ void motionPlanner::referenceMain()
 
 void motionPlanner::checkBumpers()
 {
-    if (bumper[kobuki_msgs::BumperEvent::LEFT] == 1 || 
-        bumper[kobuki_msgs::BumperEvent::CENTER] == 1 || 
+    if (bumper[kobuki_msgs::BumperEvent::LEFT] == 1 ||
+        bumper[kobuki_msgs::BumperEvent::CENTER] == 1 ||
         bumper[kobuki_msgs::BumperEvent::RIGHT] == 1)
     {
         float startX, startY;
         bool right = bumper[kobuki_msgs::BumperEvent::RIGHT] == 1;
+        bool center = bumper[kobuki_msgs::BumperEvent::CENTER] == 1;
 
         // Maneuver backwards
         startX = posX; startY = posY;
-        while (dist(startX, startY, posX, posY) < 0.15)
+        while (dist(startX, startY, posX, posY) < bumperPullbackDist)
         {
            publishVelocity(0 /* angular */, -0.1 /* linear */, true /* spinOnce */);
         }
 
-        // Adjust angle away from obstacle
-        if (right)
-            rotate2angle(20);
-        else 
-            rotate2angle(20, CW);
-
-        // Maneuver forwards
-        startX = posX; startY = posY;
-        while (dist(startX, startY, posX, posY) < 0.15)
+        // If it's the front bumper, redirect the robot
+        if (center)
         {
-           publishVelocity(0 /* angular */, 0.1 /* linear */, true /* spinOnce */);
+            chooseDirection();
         }
+        // If side, do a "__/" kind of reruoting
+        else
+        {
+            // Adjust angle away from obstacle
+            if (right)
+                rotate2angle(20);
+            else
+                rotate2angle(20, CW);
 
-        // // Adjust angle back to original direction
-        if (right)
-            rotate2angle(20, CW);
-        else 
-            rotate2angle(20);
+            // Maneuver forwards
+            startX = posX;
+            startY = posY;
+            while (dist(startX, startY, posX, posY) < 0.15)
+            {
+                publishVelocity(0 /* angular */, 0.1 /* linear */, true /* spinOnce */);
+            }
+
+            // Adjust angle back to original direction
+            if (right)
+                rotate2angle(20, CW);
+            else
+                rotate2angle(20);
+        }
     }
 }
 
-geometry_msgs::Twist motionPlanner::threeRegion() 
+geometry_msgs::Twist motionPlanner::threeRegion()
 {
     /**
      * Controls the robot to follow the wall. Uses three regions control.
@@ -190,12 +201,12 @@ geometry_msgs::Twist motionPlanner::threeRegion()
     float forwardSpeed = 0.1;
 
     // If we turn outwards if we are too close to wall and we turn inwards if we are too far from wall.
-    if (currentDistFromWall < closeThreshold) 
+    if (currentDistFromWall < closeThreshold)
     {
         controlYaw = 2;
         forwardSpeed = 0;
-    } 
-    else if (currentDistFromWall > 2) 
+    }
+    else if (currentDistFromWall > 2)
     {
         controlYaw = -1;
     }
@@ -340,7 +351,7 @@ void motionPlanner::publishVelocity(float angular, float linear, bool spinOnce /
     vel.linear.x = linear;
     vel_pub.publish(vel);
 
-    if (spinOnce) 
+    if (spinOnce)
     {
         ros::spinOnce();
     }
@@ -361,7 +372,7 @@ void motionPlanner::setMode() {
     time_passed =
         std::chrono::duration_cast<std::chrono::seconds>(std::chrono::system_clock::now() - time_start).count();
     random_prob = time_passed / time_total;
- 
+
     std::bernoulli_distribution randomOrNot(random_prob);
     goRandom = randomOrNot(gen);
     if (goRandom) {
@@ -391,7 +402,7 @@ void motionPlanner::laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     desiredNLasers = DEG2RAD(desiredAngle)/msg->angle_increment;
     laserOffset = desiredAngle * M_PI / (180 * msg->angle_increment);
     laserScanTime = msg->scan_time;
-    ROS_INFO("Size of laser scan array: %i, size of offset: %i, angle_max: %f, angle_min: %f, range_max: %f, range_min: %f, angle_increment: %f, scan_time: %f", 
+    ROS_INFO("Size of laser scan array: %i, size of offset: %i, angle_max: %f, angle_min: %f, range_max: %f, range_min: %f, angle_increment: %f, scan_time: %f",
         nLasers, desiredNLasers, msg->angle_max, msg->angle_min, msg->range_max, msg->range_min, msg->angle_increment, msg->scan_time);
 
     minLaserDist = msg->range_max;
@@ -399,18 +410,18 @@ void motionPlanner::laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg)
     minRightLaserDist = msg->range_max;
     for (uint32_t laser_idx = nLasers / 2 - desiredNLasers; laser_idx < nLasers / 2 + desiredNLasers; ++laser_idx)
     {
-        if (msg->range_max > msg->ranges[laser_idx] > 0) 
+        if (msg->range_max > msg->ranges[laser_idx] > 0)
         {
                 minLaserDist = std::min(minLaserDist, msg->ranges[laser_idx]);
         }
     }
     for (uint32_t laser_idx = 0; laser_idx < nLasers/2; ++laser_idx)
     {
-        if (msg->range_max > msg->ranges[laser_idx] > 0) 
+        if (msg->range_max > msg->ranges[laser_idx] > 0)
         {
                 minRightLaserDist = std::min(minRightLaserDist, msg->ranges[laser_idx]);
         }
-        if (msg->range_max > msg->ranges[nLasers-laser_idx-1] > 0) 
+        if (msg->range_max > msg->ranges[nLasers-laser_idx-1] > 0)
         {
                 minLeftLaserDist = std::min(minLeftLaserDist, msg->ranges[nLasers-laser_idx-1]);
         }

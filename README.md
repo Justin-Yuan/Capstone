@@ -108,9 +108,5 @@ port is 5900
 - [x] Move Reference code to our planner structure:
 	Note: publishVelocity now does not spinOnce by default
 	Note: random generator now initialized locally - need to check if seeding is affected
-- [] Object detection, Curve Detector (**ask TA**):
-    get the image from gmapping 
-    process the image to find the objects (bins)
-    find a way to label two bins
-- [] Try manipulate Occupancy Grid Map 
-- [] Report
+- [] Bumper wrap up
+- [] Report - graphs, obstacle avoidance, fill in details
