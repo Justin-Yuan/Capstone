@@ -2,11 +2,16 @@
 #define PLANNERS_HEADER
 
 // Regular
+
+#include <chrono>
 #include <cstdint>
 #include <cmath>
+#include <eStop.h>
+#include <math.h>
 #include <stdio.h>
 #include <vector>
 #include <iostream>
+#include <random>
 
 // ROS
 #include <ros/console.h>
@@ -25,32 +30,96 @@ using std::vector;
 #define DEG2RAD(deg) ((deg) * M_PI / 180.)
 
 class motionPlanner {
-// If we really want, we can have another "stupidPlanner" class inherenting from this one
+
 private:
+    teleController eStop;
     ros::NodeHandle nh;
     ros::Publisher vel_pub;
     ros::Subscriber bumper_sub, laser_sub, odom;
-    float posX = 0.0, posY = 0.0, yaw = 0.0;
+    float posX = 0.0, posY = 0.0, yaw = 0.0, currYaw = 0.0;
     uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
+    // Debug mode
+    bool debug = true;
+    bool simulation = true;
+
+
+    // Speed caps
+    double linear_max = 0.20;
+    double angular_max = M_PI / 6;
+
+    // Laser variables
     float minLaserDist = std::numeric_limits<float>::infinity();
     float minLeftLaserDist = std::numeric_limits<float>::infinity();
     float minRightLaserDist = std::numeric_limits<float>::infinity();
-    int32_t nLasers=0, desiredNLasers=0, desiredAngle=5;
+    int32_t nLasers=0, desiredNLasers=0;
     float laserScanTime = 1.0;
+    // double laserRange = 10;
+    // double laserRange_Left = 10, laserRange_Right = 10;
+    int laserSize = 0, laserOffset = 0, desiredAngle = 15;
+    int right_ind = 0, left_ind = 0;
+    int spin_counter = 0;
+    double x_turn = 0, y_turn = 0;
+    double x_last = 0, y_last = 0;
 
-    float prevYaw = 1.0;
-    float prevError = 0.0;
+    // Determine mode - and timing stuff
+    int mode;
+    #define FORWARD 1           // move to the furthest
+    #define EXPLORE 2           // explore randomly
+    #define time_step 30.       // TODO: remember, time is in seconds!!!!!
+    #define time_total 480.
+    std::chrono::time_point<std::chrono::system_clock> time_start = std::chrono::system_clock::now();
+    uint64_t time_passed = 0;   // initialize the time variable
+    uint64_t time_last_update = 0;
+    float random_prob = 0.; // the preferrance of exploring randomly increases over time
+    // Start timing, again, in seconds!!
+    bool goRandom;
+    // std::random_device device;
+    // std::mt19937 gen(device());
+    // std::mt19937 &gen()
+    // {
+    //   // initialize once per thread
+    //   thread_local static std::random_device device;
+    //   thread_local static std::mt19937 sgen(device());
+    //   return sgen;  
+    // }
 
-    // Functions
+    // Misc constants
+    // double M_PI = 3.1415926535897932384626;
+    #define CW false
+    #define FRONT true
+    #define cos30 cos(M_PI / 6)
+    int explore_per_dist = 2;
+    float exploreDist = 0.5;
+    float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be / instead of *
+    float exploreDist_side = 1.0;
+    int exploreAngle_bins = 12;
+    int exploreAngle_size = 360 / exploreAngle_bins;
+    vector<double> exploreZone_front = {exploreAngle_bins * 7. / 8., exploreAngle_bins * 1. / 8.}; // > or <
+    vector<double> exploreZone_left = {exploreAngle_bins * 1. / 8., exploreAngle_bins * 3. / 8.}; // > and <
+    vector<double> exploreZone_back = {exploreAngle_bins * 3. / 8., exploreAngle_bins * 5. / 8.}; // > and <
+    vector<double> exploreZone_right = {exploreAngle_bins * 5. / 8., exploreAngle_bins * 7. / 8.}; // > and <
+
+    // Planning Functions
+    void referenceMain();
     void checkBumpers();
-
-    geometry_msgs::Twist wallFollower(float dt);
     geometry_msgs::Twist threeRegion();
 
+    /* Rotation Functions */
+    bool inRange(int bin, const vector<double> & binRange, bool front=false);
+    void rotate2angle(float angle, bool CCW=true);
+    void rotate2explore(bool CCW=true);
+    void rotate2bin(int bin);
+    void chooseDirection();
+
+    /* Helper Functions */
     void publishVelocity(float angular, float linear, bool spinOnce = false);
     float dist(float startX, float startY, float endX, float endY);
 
+    /* Mode Functions */
+    void setMode();
+
+    /* Callback Functions */
     void bumperCallback(const kobuki_msgs::BumperEvent::ConstPtr& msg);
     void laserCallback(const sensor_msgs::LaserScan::ConstPtr& msg);
     void odomCallback (const nav_msgs::Odometry::ConstPtr& msg);
@@ -74,11 +143,21 @@ public:
         odom = nh.subscribe("odom", 1, &motionPlanner::odomCallback, this);
 
         vel_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
+
+        // TODO: remember to turn this off for the actual contest
+        if (simulation)
+        {
+            linear_max = 0.20;
+        }
+
+        //Initial mode
+        mode = FORWARD;
     }
 
     ~motionPlanner(){ }
 
     // Functions
+    void startup();
     void step();
 };
 

@@ -29,6 +29,7 @@ int main(int argc, char **argv)
     uint64_t secondsElapsed = 0;
 
     motionPlanner planner;
+    planner.startup();
     while(ros::ok() && secondsElapsed <= 480) 
     {
         planner.step();

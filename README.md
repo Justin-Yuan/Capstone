@@ -105,6 +105,9 @@ port is 5900
     odometry callback
     mode1 / mode2
     general exploration algrithm
+- [x] Move Reference code to our planner structure:
+	Note: publishVelocity now does not spinOnce by default
+	Note: random generator now initialized locally - need to check if seeding is affected
 - [] Object detection, Curve Detector (**ask TA**):
     get the image from gmapping 
     process the image to find the objects (bins)
