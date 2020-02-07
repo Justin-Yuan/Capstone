@@ -35,11 +35,8 @@ void motionPlanner::referenceMain()
     cout << time_passed << " " << time_last_update <<  " " << time_step << endl;
     if (time_passed - time_last_update >= time_step) setMode();
 
-    if (mode == 2)
-    {
-        // In mode 2 Print information
-        ROS_INFO("LeftRange:%f,RightRange: %f", minLeftLaserDist, minRightLaserDist);
-    }
+    ROS_INFO("Current Mode: %d, LeftRange: %f, RightRange: %f", mode, minLeftLaserDist, minRightLaserDist);
+    
     // Correction counter
     if (sqrt((posX - x_turn) * (posX - x_turn) + (posY - y_turn) * (posY - y_turn)) > explore_per_dist && mode == 2)
     {
@@ -139,6 +136,7 @@ void motionPlanner::referenceMain()
     }
 
     // write the defined speed to the robot
+    ROS_INFO("Main Publishing Velocity");
     publishVelocity(angular, linear, true /* SpinOnce */);
 }
 
@@ -283,8 +281,8 @@ void motionPlanner::chooseDirection() {
      * Rotate and choose direction to explore
      */
     // Define variables to store maximum value
-    int maxDist_front = 0, maxDist_front_idx = 0; // default is 0 zo that if things go weird, it just moves forward
-    int maxDist_side = 0, maxDist_side_idx = 0;
+    float maxDist_front = 0., maxDist_side = 0.; // default is 0 zo that if things go weird, it just moves forward
+    int maxDist_front_idx = 0, maxDist_side_idx = 0;
 
     // Explore the front/left/right zones (no back zone!)
     for (int bin = 0; bin < exploreAngle_bins; bin++)
@@ -336,6 +334,7 @@ float motionPlanner::dist(float startX, float startY, float endX, float endY)
 
 void motionPlanner::publishVelocity(float angular, float linear, bool spinOnce /*= false*/)
 {
+    ROS_INFO("Publishing - Linear: %f, Angular: %f", linear, angular);
     geometry_msgs::Twist vel;
     vel.angular.z = angular;
     vel.linear.x = linear;

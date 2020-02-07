@@ -43,7 +43,6 @@ private:
     bool debug = true;
     bool simulation = true;
 
-
     // Speed caps
     double linear_max = 0.20;
     double angular_max = M_PI / 6;
