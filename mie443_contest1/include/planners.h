@@ -39,7 +39,7 @@ private:
     float posX = 0.0, posY = 0.0, yaw = 0.0, currYaw = 0.0;
     uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
-    // Debug mode
+    // Debug state
     bool debug = true;
     bool simulation = true;
 
@@ -63,8 +63,8 @@ private:
     float k_p_big = 1.5 * k_p_small;
 
 
-    // Determine mode - and timing stuff
-    int mode;
+    // Determine state - and timing stuff
+    int state;
     #define FORWARD 1           // move to the furthest
     #define EXPLORE 2           // explore randomly
     #define time_step 30.       // TODO: remember, time is in seconds!!!!!
@@ -119,16 +119,16 @@ private:
     void chooseDirection();
 
     /* Adjustment Functions */
-    float stayAwayFromWalls(float leftDist, float rightDist);
-    float stayCentered(float leftDist, float rightDist, int leftIndex, int rightIndex, float k_p);
-    float stayChill(float frontDist);
+    float stayCentered(float leftDist, float rightDist, int leftIndex, int rightIndex, float k_p, float default_angular);
+    float stayAwayFromWalls(float leftDist, float rightDist, float default_angular);
+    float stayChill(float frontDist, float default_linear);
 
     /* Helper Functions */
     void publishVelocity(float angular, float linear, bool spinOnce = false);
     float dist(float startX, float startY, float endX, float endY);
 
-    /* Mode Functions */
-    void setMode();
+    /* State Functions */
+    void setState();
 
     /* Callback Functions */
     void bumperCallback(const kobuki_msgs::BumperEvent::ConstPtr& msg);
@@ -161,8 +161,8 @@ public:
             linear_max = 0.20;
         }
 
-        //Initial mode
-        mode = FORWARD;
+        //Initial state
+        state = FORWARD;
     }
 
     ~motionPlanner(){ }

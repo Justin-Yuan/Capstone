@@ -31,13 +31,13 @@ void motionPlanner::plannerMain()
     int minLeftLaserIndex = left_index - ((laserSize - 1) / 2);
     int minRightLaserIndex = ((laserSize - 1) / 2) - right_index;
 
-    // Reevaluate the mode every certain duration
-    if (time_passed - time_last_update >= time_step) setMode();
+    // Reevaluate the state every certain duration
+    if (time_passed - time_last_update >= time_step) setState();
 
-    ROS_INFO("Current Mode: %d, LeftRange: %f, RightRange: %f", mode, minLeftLaserDist, minRightLaserDist);
+    ROS_INFO("Current State: %d, LeftRange: %f, RightRange: %f", state, minLeftLaserDist, minRightLaserDist);
 
-    // Choose direction if in exploration mode
-    if (mode == EXPLORE){
+    // Choose direction if in exploration state
+    if (state == EXPLORE){
         if (dist(prevX, prevY, posX, posY) > explore_per_dist)
         {
             prevX = posX;
@@ -58,13 +58,16 @@ void motionPlanner::plannerMain()
 
     if (minLaserDist > obstacleDist+obstacleDist_zone)
     {
-        if (mode = EXPLORE)
+        if (state = EXPLORE)
         {
-            angular = stayCentered(minLeftLaserDist, minRightLaserDist, minLeftLaserIndex, minRightLaserIndex, k_p_small);
+            angular = stayCentered(minLeftLaserDist, minRightLaserDist, minLeftLaserIndex, minRightLaserIndex, k_p_small, 0.);
+        }
+        else {
+            angular = 0.;
         }
 
         linear = linear_max;
-        angular = stayAwayFromWalls(minLeftLaserDist, minRightLaserDist);
+        angular = stayAwayFromWalls(minLeftLaserDist, minRightLaserDist, angular);
     }
 
     // When the front sensor reading is too low
@@ -82,7 +85,7 @@ void motionPlanner::plannerMain()
     // When you are in the safe but not thaaaat safe zone, so turn faster and also be ready to slow down
     else
     {
-        angular = stayCentered(minLeftLaserDist, minRightLaserDist, 0, 0, k_p_big);
+        angular = stayCentered(minLeftLaserDist, minRightLaserDist, 0., 0., k_p_big, 0.);
         linear = stayChill(minLaserDist);
     }
 
@@ -281,7 +284,7 @@ void motionPlanner::chooseDirection() {
         rotate2angle(turnBack);
     }
     else if (maxDist_side > exploreDist_side)
-    { // Prefers to turn to the side in this mode
+    { // Prefers to turn to the side in this state
         rotate2bin(maxDist_side_idx);
     }
     else
@@ -293,8 +296,7 @@ void motionPlanner::chooseDirection() {
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Adjustment functions ////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-float motionPlanner::stayAwayFromWalls(float leftDist, float rightDist)
-{
+float motionPlanner::stayAwayFromWalls(float leftDist, float rightDist, float default_angular) {
     if (leftDist < 0.5) {
         return -angular_max;
     }
@@ -302,15 +304,15 @@ float motionPlanner::stayAwayFromWalls(float leftDist, float rightDist)
         return angular_max;
     }
     else {
-        return 0.0;
+        return default_angular;
     }
 }
 
-float motionPlanner::stayCentered(float leftDist, float rightDist, int leftIndex, int rightIndex, float k_p){
+float motionPlanner::stayCentered(float leftDist, float rightDist, int leftIndex, int rightIndex, float k_p, float default_angular){
     float curr_diff_lr = leftDist - rightDist;
     int curr_diff_index = leftIndex - rightIndex;
 
-    float angular = 0.0;
+    float angular = default_angular;
 
     // Distance difference can't be too large
     if (curr_diff_lr > allowed_laser_diff_lr) {
@@ -329,7 +331,7 @@ float motionPlanner::stayCentered(float leftDist, float rightDist, int leftIndex
     return angular;
 }
 
-float motionPlanner:: stayChill(float frontDist){
+float motionPlanner:: stayChill(float frontDist, float default_linear){
         float k_p_linear = 0.8; // even i
         float dangerousDist = frontDist - obstacleDist; // if < 0, dangerous
 
@@ -374,12 +376,12 @@ void motionPlanner::publishVelocity(float angular, float linear, bool spinOnce /
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Mode decision  //////////////////////////////////////////////////////////////////////////////////////////
+// State decision  //////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void motionPlanner::setMode() {
+void motionPlanner::setState() {
     /**
-     * Choose a mode depending on the time passed, all variables are global
+     * Choose a state depending on the time passed, all variables are global
      */
     std::random_device device;
     std::mt19937 gen(device());
@@ -392,13 +394,13 @@ void motionPlanner::setMode() {
     std::bernoulli_distribution randomOrNot(random_prob);
     goRandom = randomOrNot(gen);
     if (goRandom) {
-        mode = EXPLORE;
+        state = EXPLORE;
     } else {
-        mode = FORWARD;
+        state = FORWARD;
     }
     time_last_update = time_passed;
 
-    ROS_INFO("%f seconds, mode: %d, random_output: %d", (float) time_last_update, mode, goRandom);
+    ROS_INFO("%f seconds, state: %d, random_output: %d", (float) time_last_update, state, goRandom);
     return;
 }
 
