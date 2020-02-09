@@ -306,7 +306,7 @@ float motionPlanner::stayAwayFromWalls(float leftDist, float rightDist)
     }
 }
 
-float motionPlanner::stayCentered(float leftDist, float rightDist, int leftIndex, int rightIndex){
+float motionPlanner::stayCentered(float leftDist, float rightDist, int leftIndex, int rightIndex, float k_p){
     float curr_diff_lr = leftDist - rightDist;
     int curr_diff_index = leftIndex - rightIndex;
 
@@ -334,16 +334,16 @@ float motionPlanner:: stayChill(float frontDist){
         float dangerousDist = frontDist - obstacleDist; // if < 0, dangerous
 
         if (dangerousDist <= -0.5 * obstacleDist_zone) {
-            k_p_linear = 0.3
+            k_p_linear = 0.3;
         }
         else if (dangerousDist <= obstacleDist_zone) {
-            linear = 0.5;
+            k_p_linear = 0.5;
         }
         else if (dangerousDist <= 0) {
-            linear = 0.65;
+            k_p_linear = 0.65;
         }
         else if (dangerousDist <= 0.5 * obstacleDist_zone) {
-            linear = 0.7;
+            k_p_linear = 0.7;
         }
 
         return k_p_linear * linear_max;

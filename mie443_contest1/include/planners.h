@@ -60,7 +60,7 @@ private:
     float allowed_laser_diff_index = 100;
     float allowed_laser_diff_lr = 0.2;
     float k_p_small = 0.5 * angular_max; // PID controller for angle based on laser difference
-    float k_p_big = 1.5 * k_p;
+    float k_p_big = 1.5 * k_p_small;
 
 
     // Determine mode - and timing stuff
@@ -120,7 +120,7 @@ private:
 
     /* Adjustment Functions */
     float stayAwayFromWalls(float leftDist, float rightDist);
-    float stayCentered(float leftDist, float rightDist);
+    float stayCentered(float leftDist, float rightDist, int leftIndex, int rightIndex, float k_p);
     float stayChill(float frontDist);
 
     /* Helper Functions */
