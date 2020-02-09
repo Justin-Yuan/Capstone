@@ -331,7 +331,7 @@ float motionPlanner::stayCentered(float leftDist, float rightDist, int leftIndex
     return angular;
 }
 
-float motionPlanner:: stayChill(float frontDist, float default_linear){
+float motionPlanner:: stayChill(float frontDist){
         float k_p_linear = 0.8; // even i
         float dangerousDist = frontDist - obstacleDist; // if < 0, dangerous
 

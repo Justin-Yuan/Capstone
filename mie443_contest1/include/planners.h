@@ -121,7 +121,7 @@ private:
     /* Adjustment Functions */
     float stayCentered(float leftDist, float rightDist, int leftIndex, int rightIndex, float k_p, float default_angular);
     float stayAwayFromWalls(float leftDist, float rightDist, float default_angular);
-    float stayChill(float frontDist, float default_linear);
+    float stayChill(float frontDist);
 
     /* Helper Functions */
     void publishVelocity(float angular, float linear, bool spinOnce = false);
