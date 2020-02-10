@@ -39,7 +39,7 @@ private:
     float posX = 0.0, posY = 0.0, yaw = 0.0, currYaw = 0.0;
     uint8_t bumper[3] = {kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED, kobuki_msgs::BumperEvent::RELEASED};
 
-    // Debug mode
+    // Debug state
     bool debug = true;
     bool simulation = true;
 
@@ -54,13 +54,17 @@ private:
     int32_t nLasers=0, desiredNLasers=0;
     float laserScanTime = 1.0;
     int laserSize = 0, laserOffset = 0, desiredAngle = 15;
-    int right_ind = 0, left_ind = 0;
+    int right_index = 0, left_index = 0;
     int spin_counter = 0;
-    double x_turn = 0, y_turn = 0;
-    double x_last = 0, y_last = 0;
+    double prevX = 0, prevY = 0;
+    float allowed_laser_diff_index = 100;
+    float allowed_laser_diff_lr = 0.2;
+    float k_p_small = 0.5 * angular_max; // PID controller for angle based on laser difference
+    float k_p_big = 1.5 * k_p_small;
 
-    // Determine mode - and timing stuff
-    int mode;
+
+    // Determine state - and timing stuff
+    int state;
     #define FORWARD 1           // move to the furthest
     #define EXPLORE 2           // explore randomly
     #define time_step 30.       // TODO: remember, time is in seconds!!!!!
@@ -69,17 +73,7 @@ private:
     uint64_t time_passed = 0;   // initialize the time variable
     uint64_t time_last_update = 0;
     float random_prob = 0.; // the preferrance of exploring randomly increases over time
-    // Start timing, again, in seconds!!
     bool goRandom;
-    // std::random_device device;
-    // std::mt19937 gen(device());
-    // std::mt19937 &gen()
-    // {
-    //   // initialize once per thread
-    //   thread_local static std::random_device device;
-    //   thread_local static std::mt19937 sgen(device());
-    //   return sgen;
-    // }
 
     // Misc constants
     // double M_PI = 3.1415926535897932384626;
@@ -92,11 +86,12 @@ private:
     float bumperPullbackDist = 0.18;
     float obstacleDist = 0.6;
     float obstacleDist_side = 0.7;
+    float obstacleDist_zone = 0.1;
 
     // Exploration
     int explore_per_dist = 2;
     float exploreDist = 0.5;
-    float exploreDist_lr = exploreDist * cos30; // FIXME: might actually need to be / instead of *
+    float exploreDist_lr = exploreDist * cos30;
     float exploreDist_side = 1.0;
     int exploreAngle_bins = 12;
     int exploreAngle_size = 360 / exploreAngle_bins;
@@ -112,7 +107,7 @@ private:
     // vector<double> exploreZone_right = {exploreAngle_bins * 5. / 8., exploreAngle_bins * 6. / 8.}; // > and <
 
     // Planning Functions
-    void referenceMain();
+    void plannerMain();
     void checkBumpers();
     geometry_msgs::Twist threeRegion();
 
@@ -123,12 +118,17 @@ private:
     void rotate2bin(int bin);
     void chooseDirection();
 
+    /* Adjustment Functions */
+    float stayCentered(float leftDist, float rightDist, int leftIndex, int rightIndex, float k_p, float default_angular);
+    float stayAwayFromWalls(float leftDist, float rightDist, float default_angular);
+    float stayChill(float frontDist);
+
     /* Helper Functions */
     void publishVelocity(float angular, float linear, bool spinOnce = false);
     float dist(float startX, float startY, float endX, float endY);
 
-    /* Mode Functions */
-    void setMode();
+    /* State Functions */
+    void setState();
 
     /* Callback Functions */
     void bumperCallback(const kobuki_msgs::BumperEvent::ConstPtr& msg);
@@ -161,8 +161,8 @@ public:
             linear_max = 0.20;
         }
 
-        //Initial mode
-        mode = FORWARD;
+        //Initial state
+        state = FORWARD;
     }
 
     ~motionPlanner(){ }

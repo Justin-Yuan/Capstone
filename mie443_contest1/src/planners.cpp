@@ -13,7 +13,7 @@ void motionPlanner::step()
 {
     ROS_INFO("Stepping");
     ros::spinOnce();
-    referenceMain();
+    plannerMain();
 }
 
 
@@ -23,124 +23,88 @@ void motionPlanner::step()
 // Planning functions //////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void motionPlanner::referenceMain()
+void motionPlanner::plannerMain()
 {
     float angular, linear;
     // Offset Calculation
-    int left_ind = laserSize - 1 - laserOffset, right_ind = laserOffset;
-    int left_ind_offset = left_ind - ((laserSize - 1) / 2);
-    int right_ind_offset = ((laserSize - 1) / 2) - right_ind;
+    int left_index = laserSize - 1 - laserOffset, right_index = laserOffset;
+    int minLeftLaserIndex = left_index - ((laserSize - 1) / 2);
+    int minRightLaserIndex = ((laserSize - 1) / 2) - right_index;
 
-    // Reevaluate the mode every certain durtaion
-    if (time_passed - time_last_update >= time_step) setMode();
+    // Reevaluate the state every certain duration
+    if (time_passed - time_last_update >= time_step) setState();
 
-    ROS_INFO("Current Mode: %d, LeftRange: %f, RightRange: %f", mode, minLeftLaserDist, minRightLaserDist);
+    ROS_INFO("Current State: %d, LeftRange: %f, RightRange: %f", state, minLeftLaserDist, minRightLaserDist);
 
-    // Correction counter
-    if (sqrt((posX - x_turn) * (posX - x_turn) + (posY - y_turn) * (posY - y_turn)) > explore_per_dist && mode == 2)
-    {
-        x_turn = posX;
-        y_turn = posY;
-        chooseDirection();
+    // Choose direction if in exploration state
+    if (state == EXPLORE){
+        if (dist(prevX, prevY, posX, posY) > explore_per_dist)
+        {
+            prevX = posX;
+            prevY = posY;
+            chooseDirection();
+        }
     }
 
+    // Check and then start moving if everything is fine
     ros::spinOnce();
-
-    // .....**E-STOP DO NOT TOUCH**.......
     eStop.block();
-
-    // Bumper check
     checkBumpers();
 
-    // Free Space movement
-    // Difference between mode 1 and 2
-    if (minLaserDist > 0.7)
+
+    // -------------------------------------------------------------------------------------
+    // ---------- START OF MAIN CONTROL LOGIC ----------------------------------------------
+    // -------------------------------------------------------------------------------------
+
+    if (minLaserDist > obstacleDist+obstacleDist_zone)
     {
-        if (mode == 1) // Define mode 1
+        if (state = EXPLORE)
         {
-            // Define mode 1 speed
-            angular = 0.0;
-            linear = linear_max;
-            // Correction when it is too close to walls
-            if (minLeftLaserDist < 0.5)
-                angular = -angular_max;
-            else if (minRightLaserDist < 0.5)
-                angular = angular_max;
+            angular = stayCentered(minLeftLaserDist, minRightLaserDist, minLeftLaserIndex, minRightLaserIndex, k_p_small, 0.);
         }
-        else if (mode == 2) // Define mode 2
-        {
-            // Define linear speed
-            angular = 0.0;
-            linear = linear_max;
-            // Overwrite the angular speed when the distances from two sides are different more than 0.2
-            if (minLeftLaserDist - minRightLaserDist > 0.2)
-                angular = (minLeftLaserDist - minRightLaserDist) /
-                          minLeftLaserDist * (0.5 * angular_max);
-            else if (minRightLaserDist - minLeftLaserDist > 0.2)
-                angular = (minRightLaserDist - minLeftLaserDist) /
-                          minRightLaserDist * (-0.5 * angular_max);
-            // Determines where distance values on both sides are located, and if a large discrepancy, turns
-            if (left_ind_offset + 100 < right_ind_offset)
-                angular = angular_max;
-            else if (right_ind_offset + 100 < left_ind_offset)
-                angular = -angular_max;
-            // Overwrite the angular speed when it is too close to wall
-            if (minLeftLaserDist < 0.5)
-                angular = -angular_max;
-            else if (minRightLaserDist < 0.5)
-                angular = angular_max;
+        else {
+            angular = 0.;
         }
+
+        linear = linear_max;
+        angular = stayAwayFromWalls(minLeftLaserDist, minRightLaserDist, angular);
     }
+
     // When the front sensor reading is too low
-    else if (minLaserDist < 0.5)
+    else if (minLaserDist < obstacleDist-obstacleDist_zone)
     {
         // Determine which side has more space
-        if (minRightLaserDist < minLeftLaserDist)
-        {
+        if (minRightLaserDist < minLeftLaserDist) {
             rotate2explore();
         }
-        else
-        {
+        else {
             rotate2explore(CW);
         }
     }
+
+    // When you are in the safe but not thaaaat safe zone, so turn faster and also be ready to slow down
     else
     {
-        // Tries to stabilize robot when close to hitting wall
-        if (minLeftLaserDist - minRightLaserDist > 0.2)
-            angular = (minLeftLaserDist - minRightLaserDist) /
-                      minLeftLaserDist * (0.75 * angular_max);
-        else if (minRightLaserDist - minLeftLaserDist > 0.2)
-            angular = (minRightLaserDist - minLeftLaserDist) /
-                      minRightLaserDist * (-0.75 * angular_max);
-        else
-            angular = 0.0;
-        // More gradual deceleration, can be extended for more gradual deceleration, more predictable than just
-        // decreasing by constant value until close to wall (previous method)
-        if (0.6 < minLaserDist <= 0.65)
-            linear = 0.65 * linear_max;
-        else if (0.55 < minLaserDist <= 0.6)
-            linear = 0.5 * linear_max;
-        else if (0.5 <= minLaserDist <= 0.55)
-            linear = 0.3 * linear_max;
-        else
-            linear = 0.8 * linear_max;
+        angular = stayCentered(minLeftLaserDist, minRightLaserDist, 0., 0., k_p_big, 0.);
+        linear = stayChill(minLaserDist);
     }
 
-    // Mode 0 for sensor test
-    if (mode == 0)
-    {
-        angular = 0;
-        linear = 0;
-    }
+    // -------------------------------------------------------------------------------------
+    // ---------- END OF MAIN CONTROL LOGIC ------------------------------------------------
+    // -------------------------------------------------------------------------------------
+
 
     // write the defined speed to the robot
     ROS_INFO("Main Publishing Velocity");
     publishVelocity(angular, linear, true /* SpinOnce */);
 }
 
-void motionPlanner::checkBumpers()
-{
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Bumper Chdck ////////////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+
+void motionPlanner::checkBumpers() {
     if (bumper[kobuki_msgs::BumperEvent::LEFT] == 1 ||
         bumper[kobuki_msgs::BumperEvent::CENTER] == 1 ||
         bumper[kobuki_msgs::BumperEvent::RIGHT] == 1)
@@ -187,8 +151,7 @@ void motionPlanner::checkBumpers()
     }
 }
 
-geometry_msgs::Twist motionPlanner::threeRegion()
-{
+geometry_msgs::Twist motionPlanner::threeRegion() {
     /**
      * Controls the robot to follow the wall. Uses three regions control.
      * @param  {minLaserDist} float : the minimum value in msg->ranges from our laser scan - distance to closest wall.
@@ -261,16 +224,14 @@ void motionPlanner::rotate2explore(bool CCW /* = true */) {
     if (!CCW)
         angular = angular * -1;
 
-    // FIXME: change to the logic of when to stop
-    // Currently: stop turning (ready to go forward linearly) if there's something far away enough
+    // Stop turning (ready to go forward linearly) if there's something far away enough
     while (minLaserDist < exploreDist || minLeftLaserDist < exploreDist_lr || minRightLaserDist < exploreDist_lr)
     {
         publishVelocity(angular, 0.0, true /* SpinOnce */);
     }
 }
 
-void motionPlanner::rotate2bin(int bin)
-{
+void motionPlanner::rotate2bin(int bin) {
     /**
      * Command center of which rotate to perform
      * @param  {int} bin : bin index
@@ -285,8 +246,6 @@ void motionPlanner::rotate2bin(int bin)
     }
 }
 
-// Correction function - the robot will rotate 360 degrees first. Then it will rotate to the direction that has the most space.
-// The robot should choose direction on its left or right side prior to the front side. Also, the robot will not turn back.
 void motionPlanner::chooseDirection() {
     /**
      * Rotate and choose direction to explore
@@ -325,7 +284,7 @@ void motionPlanner::chooseDirection() {
         rotate2angle(turnBack);
     }
     else if (maxDist_side > exploreDist_side)
-    { // Prefers to turn to the side in this mode
+    { // Prefers to turn to the side in this state
         rotate2bin(maxDist_side_idx);
     }
     else
@@ -333,6 +292,65 @@ void motionPlanner::chooseDirection() {
         rotate2bin(maxDist_front_idx);
     }
 }
+
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+// Adjustment functions ////////////////////////////////////////////////////////////////////////////////////
+////////////////////////////////////////////////////////////////////////////////////////////////////////////
+float motionPlanner::stayAwayFromWalls(float leftDist, float rightDist, float default_angular) {
+    if (leftDist < 0.5) {
+        return -angular_max;
+    }
+    else if (rightDist < 0.5) {
+        return angular_max;
+    }
+    else {
+        return default_angular;
+    }
+}
+
+float motionPlanner::stayCentered(float leftDist, float rightDist, int leftIndex, int rightIndex, float k_p, float default_angular){
+    float curr_diff_lr = leftDist - rightDist;
+    int curr_diff_index = leftIndex - rightIndex;
+
+    float angular = default_angular;
+
+    // Distance difference can't be too large
+    if (curr_diff_lr > allowed_laser_diff_lr) {
+        angular = k_p * curr_diff_lr / leftDist;
+    }
+    else if (-curr_diff_lr > allowed_laser_diff_lr) {
+        angular = k_p * curr_diff_lr / rightDist;
+    }
+
+    // Index difference can't be too large either (otherwise orientation is skewed)
+    if (curr_diff_index > allowed_laser_diff_index)
+        angular = -angular_max;
+    else if (-curr_diff_index > allowed_laser_diff_index)
+        angular = angular_max;
+
+    return angular;
+}
+
+float motionPlanner:: stayChill(float frontDist){
+        float k_p_linear = 0.8; // even i
+        float dangerousDist = frontDist - obstacleDist; // if < 0, dangerous
+
+        if (dangerousDist <= -0.5 * obstacleDist_zone) {
+            k_p_linear = 0.3;
+        }
+        else if (dangerousDist <= obstacleDist_zone) {
+            k_p_linear = 0.5;
+        }
+        else if (dangerousDist <= 0) {
+            k_p_linear = 0.65;
+        }
+        else if (dangerousDist <= 0.5 * obstacleDist_zone) {
+            k_p_linear = 0.7;
+        }
+
+        return k_p_linear * linear_max;
+}
+
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 // Helper functions ////////////////////////////////////////////////////////////////////////////////////////
@@ -358,12 +376,12 @@ void motionPlanner::publishVelocity(float angular, float linear, bool spinOnce /
 }
 
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
-// Mode decision  //////////////////////////////////////////////////////////////////////////////////////////
+// State decision  //////////////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-void motionPlanner::setMode() {
+void motionPlanner::setState() {
     /**
-     * Choose a mode depending on the time passed, all variables are global
+     * Choose a state depending on the time passed, all variables are global
      */
     std::random_device device;
     std::mt19937 gen(device());
@@ -376,13 +394,13 @@ void motionPlanner::setMode() {
     std::bernoulli_distribution randomOrNot(random_prob);
     goRandom = randomOrNot(gen);
     if (goRandom) {
-        mode = EXPLORE;
+        state = EXPLORE;
     } else {
-        mode = FORWARD;
+        state = FORWARD;
     }
     time_last_update = time_passed;
 
-    ROS_INFO("%f seconds, mode: %d, random_output: %d", (float) time_last_update, mode, goRandom);
+    ROS_INFO("%f seconds, state: %d, random_output: %d", (float) time_last_update, state, goRandom);
     return;
 }
 
