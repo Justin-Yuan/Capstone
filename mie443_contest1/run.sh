@@ -5,6 +5,8 @@
 
 # enable job control  
 set -m
+# range ~ 2.0
+# export ROBOT_INITIAL_POSE="-x 0.5 -y 0.5 -Y 0"
 
 # options 
 EXECUTABLE="contest1"
