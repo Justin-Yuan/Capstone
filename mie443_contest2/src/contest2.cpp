@@ -7,6 +7,11 @@ int main(int argc, char** argv) {
     // Setup ROS.
     ros::init(argc, argv, "contest2");
     ros::NodeHandle n;
+
+    // subscribe to map server to grab map 
+    Navigation nav();
+    ros::Subscriber mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, &nav);
+
     // Robot pose object + subscriber.
     RobotPose robotPose(0,0,0);
     ros::Subscriber amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
@@ -34,3 +39,13 @@ int main(int argc, char** argv) {
     }
     return 0;
 }
+
+
+"""
+1. localize to determine starting position
+2. determinze objecgt traversal order 
+3. generate veiw points (margin is half wall size + half robot size + delta)
+4. order in a sequence (optioanlly insert starting point)
+4. start traversing
+5. return to start 
+"""
