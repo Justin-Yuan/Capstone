@@ -46,6 +46,21 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
     else
     {
         /***YOUR CODE HERE***/
+        for(int tempNumber=0;tempNumber<=2;tempNumber++){
+            Mat img_object = boxes.templates[tempNumber];    
+            // Mat img_scene = img;
+
+            //If file template file cannot be loaded
+            if( !img_object.data ){  
+                std::cout<< " --(!) Error reading img_object " << std::endl; return -1; 
+            }
+
+            checkImage = compareImages(img, img_object, rectAreas[1]); // what is area here for
+            cout << "IMG1-> Matches: " << checkImage << " Area: " << rectAreas[1] << endl;
+
+            
+
+        }
         vector<float> rectAreas(3, 0.0);
 
         int checkImage = compareImages(img, image_array_1, rectAreas[0]); //need to fix this
@@ -101,6 +116,7 @@ int compareImages(cv::Mat img_scene, cv::Mat img_object, float &area)
                                descriptors_object);
     detector->detectAndCompute(img_scene, Mat(), keypoints_scene,
                                descriptors_scene);
+
     //-- Step 3: Matching descriptor vectors using FLANN matcher
     FlannBasedMatcher matcher;
     std::vector<DMatch> matches;
@@ -108,6 +124,7 @@ int compareImages(cv::Mat img_scene, cv::Mat img_object, float &area)
 
     double max_dist = 0;
     double min_dist = 100;
+
     //-- Quick calculation of max and min distances between keypoints
     for (int i = 0; i < descriptors_object.rows; i++)
     {
