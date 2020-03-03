@@ -29,6 +29,37 @@ void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr &msg)
     }
 }
 
+float computeArea(std::vector<Point2f> scene_corners, cv::Mat img_object) {
+    // Might need additional checks
+    if (scene_corners.size() < 4) return 0.0;
+    auto pointA = scene_corners[0] + Point2f( img_object.cols, 0);
+    auto pointB =  scene_corners[1] + Point2f( img_object.cols, 0);
+    auto pointC = scene_corners[2] + Point2f( img_object.cols, 0);
+    auto pointD = scene_corners[3] + Point2f( img_object.cols, 0);
+
+    cout << pointA.x << " "<<pointA.y<<endl;
+    cout << pointB.x << " "<<pointB.y<<endl;
+    cout << pointC.x << " "<<pointC.y<<endl;
+    cout << pointD.x << " "<<pointD.y<<endl;
+
+    auto xMin = fmin(fmin(pointA.x, pointB.x), fmin(pointC.x, pointD.x));
+    auto yMin = fmin(fmin(pointA.y, pointB.y), fmin(pointC.y, pointD.y));
+    auto xMax = fmax(fmax(pointA.x, pointB.x), fmax(pointC.x, pointD.x));
+    auto yMax = fmax(fmax(pointA.y, pointB.y), fmax(pointC.y, pointD.y));
+
+
+    float s1 = xMax - xMin;
+    float s2 = yMax - yMin;
+
+    float area = s1 * s2;
+    
+    //return positive area it ressembles a rectanle, otherwise return negative and equal area
+    if ((abs(pointA.x - pointD.x) < 50) && (abs(pointB.x - pointC.x) < 50) && (abs(pointA.y - pointB.y) < 50) && (abs(pointC.y - pointD.y) < 50))
+        return area;
+    else
+        return -1*area;
+}
+
 int ImagePipeline::getTemplateID(Boxes &boxes)
 {
     int template_id = -1;
