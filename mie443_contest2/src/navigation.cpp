@@ -33,3 +33,42 @@ bool Navigation::moveToGoal(float xGoal, float yGoal, float phiGoal){
         return false;
     }
 }
+
+std::vector<std::vector<float>> Navigation::getTraversalOrder(std::vector<std::vector<float>> coords, int starting_pos){
+    // Modified travelling salesman problem solution from: https://www.geeksforgeeks.org/traveling-salesman-problem-tsp-implementation/
+
+    // store all vertex apart from source vertex 
+    std::vector<std::vector<float>> vertex; 
+    for (int i = 0; i < V; i++) 
+        if (i != starting_pos) 
+            vertex.push_back(coords[i]); 
+  
+    // store minimum weight Hamiltonian Cycle. 
+    int min_path = INT_MAX; 
+    std::vector<std::vector<float>> min_vertex = vertex;
+    do { 
+        // store current Path weight(cost) 
+        int current_pathweight = getDist(coords[starting_pos], vertex[0]); 
+          
+        // compute current path weight 
+        for (int i = 0; i < vertex.size() - 1; i++) { 
+            current_pathweight += getDist(vertex[i], vertex[i+1]);
+        } 
+        current_pathweight += getDist(vertex[i], coords[starting_pos]); 
+  
+        // update minimum 
+        if (current_pathweight < min_path){
+            min_path = current_pathweight; 
+            min_vertex = vertex
+        }
+        
+    } while (next_permutation(vertex.begin(), vertex.end())); 
+    
+    // Append starting coord to end of vector.
+    vertex.push_back(coords[starting_pos])
+    return vertex;
+}
+
+int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
+    return pow(pow((coor1[0] - coor2[0]),2) + pow((coor1[1] - coor2[1]),2),1/2);
+}
