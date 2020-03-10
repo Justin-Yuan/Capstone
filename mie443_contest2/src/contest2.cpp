@@ -29,11 +29,25 @@ int main(int argc, char** argv) {
     // Initialize image objectand subscriber.
     ImagePipeline imagePipeline(n);
     // Execute strategy.
+
+    // Get starting pose, append it to the box coordinates, and then find the traversal path.
+    // vector<int> starting_pose = getStartingPose();
+    std::vector<std::vector<float>> traversal_path = boxes.coords;
+    // traversal_path.push_back(starting_pose);
+    traversal_path = nav.getTraversalOrder(traversal_path, traversal_path.size() - 1);
+
     while(ros::ok()) {
         ros::spinOnce();
         /***YOUR CODE HERE***/
         // Use: boxes.coords
         // Use: robotPose.x, robotPose.y, robotPose.phi
+
+        // while there are still nodes to traverse{
+                // move to node using move to goal
+                // run the image detection algorithm
+        // }
+        // return to starting node (the last node in the traversal path) 
+
         imagePipeline.getTemplateID(boxes);
         ros::Duration(0.01).sleep();
     }
@@ -45,7 +59,7 @@ int main(int argc, char** argv) {
 1. localize to determine starting position
 2. determinze objecgt traversal order 
 3. generate veiw points (margin is half wall size + half robot size + delta)
-4. order in a sequence (optioanlly insert starting point)
+4. order in a sequence (optioanlly insert starting point) (this is done)
 4. start traversing
 5. return to start 
 """
