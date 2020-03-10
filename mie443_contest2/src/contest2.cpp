@@ -127,14 +127,14 @@ int main(int argc, char **argv)
             index += (3 - index % 3);
         }
         */
-
-        /* Ref code:
+// 
+         // Ref code:
         // Get starting pose, append it to the box coordinates, and then find the traversal path.
         // vector<int> starting_pose = getStartingPose();
         std::vector<std::vector<float>> traversal_path = boxes.coords;
         // traversal_path.push_back(starting_pose);
         traversal_path = nav.getTraversalOrder(traversal_path, traversal_path.size() - 1);
-        */
+        
 
         for (i = 0; i < traversal_path.size() - 1; i++){
             nav.moveToGoal(traversal_path[i][0], traversal_path[i][1], traversal_path[i][2]);

@@ -87,23 +87,23 @@ std::vector<std::vector<float>> Navigation::getTraversalOrder(std::vector<std::v
     // Modified travelling salesman problem solution from: https://www.geeksforgeeks.org/traveling-salesman-problem-tsp-implementation/
 
     // store all vertex apart from source vertex 
-    std::vector<std::vector<float>> vertex; 
+    std::vector<int> vertex; 
     for (int i = 0; i < coords.size(); i++) 
         if (i != starting_pos) 
-            vertex.push_back(coords[i]); 
+            vertex.push_back(i); 
   
     // store minimum weight Hamiltonian Cycle. 
     int min_path = INT_MAX; 
-    std::vector<std::vector<float>> min_vertex = vertex;
+    std::vector<int> min_vertex = vertex;
     do { 
         // store current Path weight(cost) 
-        int current_pathweight = getDist(coords[starting_pos], vertex[0]); 
+        int current_pathweight = getDist(coords[starting_pos], coords[vertex[0]]); 
           
         // compute current path weight 
         for (int i = 0; i < vertex.size() - 1; i++) { 
-            current_pathweight += getDist(vertex[i], vertex[i+1]);
+            current_pathweight += getDist(coords[vertex[i]], coords[vertex[i+1]]);
         } 
-        current_pathweight += getDist(vertex[i], coords[starting_pos]); 
+        current_pathweight += getDist(coords[vertex[i]], coords[starting_pos]); 
   
         // update minimum 
         if (current_pathweight < min_path){
@@ -114,7 +114,7 @@ std::vector<std::vector<float>> Navigation::getTraversalOrder(std::vector<std::v
     } while (next_permutation(vertex.begin(), vertex.end())); 
     
     // Append starting coord to end of vector.
-    vertex.push_back(coords[starting_pos])
+    vertex.push_back(starting_pos)
     return vertex;
 }
 
