@@ -45,73 +45,74 @@ int main(int argc, char **argv)
     }
 
     /* Params */
-    float boxDistance = 0.75;
+    // float boxDistance = 0.75;
 
-    std::vector<float> origin{robotPose.x, robotPose.y, robotPose.phi};
-    std::vector<std::vector<float>> orderBoxes = findOptimalPath({robotPose.x, robotPose.y, robotPose.phi}, boxes.coords);
-    std::vector<std::vector<float>> path = computeTarget(orderBoxes, boxDistance);
-    int index = 0;
-    int matchStatus[3] = {0}; // records of this ID is already found
-    bool atBox = false;
-    std::ofstream f;
-    f.open("/home/hmnikola/ouputC2.txt");
+    // std::vector<float> origin{robotPose.x, robotPose.y, robotPose.phi};
+    // std::vector<std::vector<float>> orderBoxes = findOptimalPath({robotPose.x, robotPose.y, robotPose.phi}, boxes.coords);
+    // std::vector<std::vector<float>> path = computeTarget(orderBoxes, boxDistance);
+    // int index = 0;
+    // int matchStatus[3] = {0}; // records of this ID is already found
+    // bool atBox = false;
+    // std::ofstream f;
+    // f.open("/home/hmnikola/ouputC2.txt");
 
-    while (ros::ok() && index < path.size())
+    while (ros::ok())
+    // while (ros::ok() && index < path.size())
     {
         ros::spinOnce();
-        std::cout << "Robot Position: "
-                  << " x: " << robotPose.x << " y: " << robotPose.y << " z: "
-                  << robotPose.phi << std::endl;
+        // std::cout << "Robot Position: "
+        //           << " x: " << robotPose.x << " y: " << robotPose.y << " z: "
+        //           << robotPose.phi << std::endl;
 
-        std::cout << "Curent Goal:" << path[index][0] << " " << path[index][1] << " " << path[index][2] << std::endl;
-        atBox = Navigation::moveToGoal(path[index][0], path[index][1], path[index][2]);
-        ros::spinOnce();
+        // std::cout << "Curent Goal:" << path[index][0] << " " << path[index][1] << " " << path[index][2] << std::endl;
+        // atBox = Navigation::moveToGoal(path[index][0], path[index][1], path[index][2]);
+        // ros::spinOnce();
 
-        int templateID = imagePipeline.getTemplateID(boxes);
-        std::string match = "N/A";
+        // int templateID = imagePipeline.getTemplateID(boxes);
+        // std::string match = "N/A";
 
-        switch (templateID)
-        {
-        case RAISIN:
-            match = "Raisin Bran";
-            break;
-        case CINNAMON:
-            match = "Cinnamon Toast Crunch";
-            break;
-        case RICE:
-            match = "Rice Krispies";
-            break;
-        case BLANK:
-            match = "Empty Surface";
-        default:
-            match = "N/A";
-        }
+        // switch (templateID)
+        // {
+        // case RAISIN:
+        //     match = "Raisin Bran";
+        //     break;
+        // case CINNAMON:
+        //     match = "Cinnamon Toast Crunch";
+        //     break;
+        // case RICE:
+        //     match = "Rice Krispies";
+        //     break;
+        // case BLANK:
+        //     match = "Empty Surface";
+        // default:
+        //     match = "N/A";
+        // }
 
-        //-- When we're in front of a box
-        if (atBox)
-        {
-            //-- if a certain match is found, log it's status and location --
-            if (match != "None")
-            {
-                //-- check/update duplication status
-                if (matchStatus[templateID] == 1) {
-                    f << "(Duplicate) ";
-                } else {
-                    matchStatus[templateID] = 1;
-                }
+        // //-- When we're in front of a box
+        // if (atBox)
+        // {
+        //     //-- if a certain match is found, log it's status and location --
+        //     if (match != "None")
+        //     {
+        //         //-- check/update duplication status
+        //         if (matchStatus[templateID] == 1) {
+        //             f << "(Duplicate) ";
+        //         } else {
+        //             matchStatus[templateID] = 1;
+        //         }
 
-                // TODO: use the location format from Justin and Gary
-                f match << " (ID=" << templateID << ") found at location(" << orderBoxes[index / 3][0] << ", "
-                    << orderBoxes[index / 3][1] << ", " << orderBoxes[index / 3][2] << ")" << std::endl;
+        //         // TODO: use the location format from Justin and Gary
+        //         f match << " (ID=" << templateID << ") found at location(" << orderBoxes[index / 3][0] << ", "
+        //             << orderBoxes[index / 3][1] << ", " << orderBoxes[index / 3][2] << ")" << std::endl;
 
-                // TODO: change this: index += (3 - index % 3);
-            }
-            //-- otherwise, do whatever is needed --
-            else
-            {
-                index++;
-            }
-        }
+        //         // TODO: change this: index += (3 - index % 3);
+        //     }
+        //     //-- otherwise, do whatever is needed --
+        //     else
+        //     {
+        //         index++;
+        //     }
+        // }
         // When we're not at a box
         /*
         else
@@ -126,16 +127,18 @@ int main(int argc, char **argv)
             }
             index += (3 - index % 3);
         }
+
+    // Navigation::moveToGoal(origin[0], origin[1], origin[2]);
         */
 // 
-         // Ref code:
+        // Our code, reference code is commented above due to not compiling (** please ensure code compiles before adding in reference **):
         // Get starting pose, append it to the box coordinates, and then find the traversal path.
         // vector<int> starting_pose = getStartingPose();
         std::vector<std::vector<float>> traversal_path = boxes.coords;
         // traversal_path.push_back(starting_pose);
-        traversal_path = nav.getTraversalOrder(traversal_path, traversal_path.size() - 1);
+        // sort traversal path using our navigation functions.
         
-
+        int i;
         for (i = 0; i < traversal_path.size() - 1; i++){
             nav.moveToGoal(traversal_path[i][0], traversal_path[i][1], traversal_path[i][2]);
             // run the image detection algorithm (this might include taking the image at 3 different viewpoints)
@@ -146,8 +149,6 @@ int main(int argc, char **argv)
         nav.moveToGoal(traversal_path[i][0], traversal_path[i][1], traversal_path[i][2]);
         break;
     }
-    Navigation::moveToGoal(origin[0], origin[1], origin[2]);
-
     return 0;
 }
 
