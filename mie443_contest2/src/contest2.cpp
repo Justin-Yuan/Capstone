@@ -112,14 +112,15 @@ int main(int argc, char** argv) {
         // Use: boxes.coords
         // Use: robotPose.x, robotPose.y, robotPose.phi
 
-        // while there are still nodes to traverse{
-                // move to node using move to goal
-                // run the image detection algorithm
-        // }
-        // return to starting node (the last node in the traversal path) 
-
-        imagePipeline.getTemplateID(boxes);
-        ros::Duration(0.01).sleep();
+        for (i = 0; i < traversal_path.size() - 1; i++){
+            nav.moveToGoal(traversal_path[i][0], traversal_path[i][1], traversal_path[i][2]);
+            // run the image detection algorithm (this might include taking the image at 3 different viewpoints)
+            // imagePipeline.getTemplateID(boxes); <= I have no idea how this function works, but it is here as an example.
+            ros::Duration(0.01).sleep();
+        }
+        // Move back to start and end run.
+        nav.moveToGoal(traversal_path[i][0], traversal_path[i][1], traversal_path[i][2]);
+        break;
     }
     Navigation::moveToGoal(origin[0], origin[1], origin[2]);
 
