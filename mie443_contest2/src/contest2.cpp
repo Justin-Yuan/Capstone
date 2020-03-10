@@ -3,15 +3,11 @@
 #include <robot_pose.h>
 #include <imagePipeline.h>
 
+
 int main(int argc, char** argv) {
     // Setup ROS.
     ros::init(argc, argv, "contest2");
     ros::NodeHandle n;
-
-    // subscribe to map server to grab map 
-    Navigation nav();
-    ros::Subscriber mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, &nav);
-
     // Robot pose object + subscriber.
     RobotPose robotPose(0,0,0);
     ros::Subscriber amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
@@ -29,14 +25,83 @@ int main(int argc, char** argv) {
     // Initialize image objectand subscriber.
     ImagePipeline imagePipeline(n);
     // Execute strategy.
-    while(ros::ok()) {
+
+    while (robotPose.x == 0 && robotPose.y == 0 && robotPose.phi == 0){
         ros::spinOnce();
-        /***YOUR CODE HERE***/
-        // Use: boxes.coords
-        // Use: robotPose.x, robotPose.y, robotPose.phi
-        imagePipeline.getTemplateID(boxes);
+        std::cout <<"Nah"<<std::endl;
+    }
+
+    /* Params */
+    float boxDistance = 0.75;
+
+    std::vector<float> origin{robotPose.x, robotPose.y, robotPose.phi};
+    std::vector<std::vector<float>> orderBoxes = findOptimalPath({robotPose.x, robotPose.y, robotPose.phi}, boxes.coords);
+    std::vector<std::vector<float>> path = computeTarget(orderBoxes, boxDistance);
+    int index = 0;
+    int found[3] = {0};
+    bool goalFound = false;
+    std::ofstream f;
+    f.open ("/home/hmnikola/ouputC2.txt");
+
+    while(ros::ok() && index < path.size()) {
+        ros::spinOnce();
+        std::cout<<"Robot Position: " << " x: " << robotPose.x << " y: " << robotPose.y << " z: " 
+            << robotPose.phi << std::endl;
+
+        std::cout << "Curent Goal:"<<path[index][0]<< " " <<path[index][1]<< " " <<path[index][2]<<std::endl;
+        goalFound = Navigation::moveToGoal(path[index][0], path[index][1], path[index][2]);
+        ros::spinOnce();
+        int match = imagePipeline.getTemplateID(boxes);
+        std::string boxType = "none";
+
+        switch(match) {
+        case 0 :
+            boxType = "Raisin Bran";
+            break;
+        case 1 :
+            boxType = "Cinnamon Toast Crunch";
+            break;
+        case 2 :
+            boxType = "Rice Krispies";
+            break;
+        default :
+            boxType = "None";
+        }
+
+        if (goalFound){
+            if (match >=0 && match <=2){ //found a good match, record it and skip to next box
+                if (found[match] == 1){//duplicate match found
+                    f << "Found duplicate of "<<boxType<<", (image " << match<<") at location ("<<orderBoxes[index/3][0]<<", "
+                    <<orderBoxes[index/3][1]<<", "<<orderBoxes[index/3][2]<<")"<<std::endl;
+                }
+                else { //first match of box type found
+                    f << "Found "<<boxType<<", (image " << match<<") at location("<<orderBoxes[index/3][0]<<", "
+                    <<orderBoxes[index/3][1]<<", "<<orderBoxes[index/3][2]<<")"<<std::endl;
+                }
+                found[match] = 1;
+                index += (3 - index%3);
+            } else if (match == -2 || index%3 == 2){ //A definite blank box or all 3 angles couldn't find a match
+                    f << "Found blank box at position ("<<orderBoxes[index/3][0]<<", "
+                    <<orderBoxes[index/3][1]<<", "<<orderBoxes[index/3][2]<<")"<<std::endl;
+                    index += (3 - index%3);
+            }
+            else { //not a great match but not a definite blank either, try a different angle
+                index++;
+            }
+        } else {
+            std::vector<float> failedBox = {orderBoxes[index/3][0], orderBoxes[index/3][1], orderBoxes[index/3][2]};
+            std::vector<std::vector<float>> failedBoxes;
+            failedBoxes.push_back(failedBox);
+            std::vector<std::vector<float>> newTargets = computeTarget(failedBoxes, boxDistance - 0.10);
+            for (int i = 0; i < newTargets.size(); i++){
+                path.push_back(newTargets[i]);
+            }
+            index += (3 - index%3);
+        }
         ros::Duration(0.01).sleep();
     }
+    Navigation::moveToGoal(origin[0], origin[1], origin[2]);
+
     return 0;
 }
 
