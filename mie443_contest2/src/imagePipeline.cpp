@@ -77,21 +77,21 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
     else
     {
         /***YOUR CODE HERE***/
-        for(int tempNumber=0;tempNumber<=2;tempNumber++){
-            Mat img_object = boxes.templates[tempNumber];    
-            // Mat img_scene = img;
+        // for(int tempNumber=0;tempNumber<=2;tempNumber++){
+        //     Mat img_object = boxes.templates[tempNumber];    
+        //     // Mat img_scene = img;
 
-            //If file template file cannot be loaded
-            if( !img_object.data ){  
-                std::cout<< " --(!) Error reading img_object " << std::endl; return -1; 
-            }
+        //     //If file template file cannot be loaded
+        //     if( !img_object.data ){  
+        //         std::cout<< " --(!) Error reading img_object " << std::endl; return -1; 
+        //     }
 
-            checkImage = compareImages(img, img_object, rectAreas[1]); // what is area here for
-            cout << "IMG1-> Matches: " << checkImage << " Area: " << rectAreas[1] << endl;
+        //     checkImage = compareImages(img, img_object, rectAreas[tempNumber]); // what is area here for
+        //     cout << "IMG1-> Matches: " << checkImage << " Area: " << rectAreas[tempNumber] << endl;
 
             
 
-        }
+        // }
         vector<float> rectAreas(3, 0.0);
 
         int checkImage = compareImages(img, image_array_1, rectAreas[0]); //need to fix this
@@ -232,10 +232,3 @@ int compareImages(cv::Mat img_scene, cv::Mat img_object, float &area)
 //   /** @function readme */
 //   void readme()
 //   { std::cout << " Usage: ./SURF_descriptor <img1> <img2>" << std::endl; }
-
-ImagePipeline::ImagePipeline(ros::NodeHandle &n)
-{
-    image_transport::ImageTransport it(n);
-    sub = it.subscribe(IMAGE_TOPIC, 1, &ImagePipeline::imageCallback, this);
-    isValid = false;
-}
