@@ -33,7 +33,7 @@ float computeArea(std::vector<Point2f> scene_corners, cv::Mat img_object) {
     // Might need additional checks
     if (scene_corners.size() < 4) return 0.0;
     auto pointA = scene_corners[0] + Point2f( img_object.cols, 0);
-    auto pointB =  scene_corners[1] + Point2f( img_object.cols, 0);
+    auto pointB = scene_corners[1] + Point2f( img_object.cols, 0);
     auto pointC = scene_corners[2] + Point2f( img_object.cols, 0);
     auto pointD = scene_corners[3] + Point2f( img_object.cols, 0);
 
@@ -60,8 +60,13 @@ float computeArea(std::vector<Point2f> scene_corners, cv::Mat img_object) {
         return -1*area;
 }
 
-int ImagePipeline::getTemplateID(Boxes &boxes)
-{
+int ImagePipeline::getTemplateID(Boxes &boxes){
+
+    // read template images. TODO: use load templates function in boxes.cpp
+    cv::Mat image_array_1 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template1.jpg",IMREAD_GRAYSCALE);
+    cv::Mat image_array_2 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template2.jpg",IMREAD_GRAYSCALE);
+    cv::Mat image_array_3 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template3.jpg",IMREAD_GRAYSCALE);
+
     int template_id = -1;
     if (!isValid)
     {
@@ -76,25 +81,14 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
     }
     else
     {
-        /***YOUR CODE HERE***/
-        for(int tempNumber=0;tempNumber<=2;tempNumber++){
-            Mat img_object = boxes.templates[tempNumber];    
-            // Mat img_scene = img;
+        /***YOUR CODE HERE***/    
 
-            //If file template file cannot be loaded
-            if( !img_object.data ){  
-                std::cout<< " --(!) Error reading img_object " << std::endl; return -1; 
-            }
-
-            checkImage = compareImages(img, img_object, rectAreas[1]); // what is area here for
-            cout << "IMG1-> Matches: " << checkImage << " Area: " << rectAreas[1] << endl;
-
-            
-
-        }
+        // initialize 
         vector<float> rectAreas(3, 0.0);
+        int checkImage = 0;
 
-        int checkImage = compareImages(img, image_array_1, rectAreas[0]); //need to fix this
+        // Get bounding box areas
+        checkImage = compareImages(img, image_array_1, rectAreas[0]); //need to fix this
         cout << "IMG0-> Matches: " << checkImage << " Area: " << rectAreas[0] << endl;
 
         checkImage = compareImages(img, image_array_2, rectAreas[1]);
@@ -103,6 +97,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
         checkImage = compareImages(img, image_array_3, rectAreas[2]);
         cout << "IMG2-> Matches: " << checkImage << " Area: " << rectAreas[2] << endl;
 
+        // Finding matches
         int potentialMatch = -1;
         int matchCount = 0;
         int definiteNotMatch = 0;
@@ -232,10 +227,3 @@ int compareImages(cv::Mat img_scene, cv::Mat img_object, float &area)
 //   /** @function readme */
 //   void readme()
 //   { std::cout << " Usage: ./SURF_descriptor <img1> <img2>" << std::endl; }
-
-ImagePipeline::ImagePipeline(ros::NodeHandle &n)
-{
-    image_transport::ImageTransport it(n);
-    sub = it.subscribe(IMAGE_TOPIC, 1, &ImagePipeline::imageCallback, this);
-    isValid = false;
-}

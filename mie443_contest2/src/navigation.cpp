@@ -88,7 +88,7 @@ std::vector<std::vector<float>> Navigation::getTraversalOrder(std::vector<std::v
 
     // store all vertex apart from source vertex 
     std::vector<std::vector<float>> vertex; 
-    for (int i = 0; i < V; i++) 
+    for (int i = 0; i < coords.size(); i++) 
         if (i != starting_pos) 
             vertex.push_back(coords[i]); 
   
