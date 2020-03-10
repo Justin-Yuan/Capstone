@@ -2,6 +2,13 @@
 #include <actionlib/client/simple_action_client.h>
 #include <move_base_msgs/MoveBaseAction.h>
 #include <tf/transform_datatypes.h>
+#include <nav_msgs/OccupancyGrid.h>
+
+#include <boxes.h>
+#include <vector>
+#include <map>
+import <math.h>
+
 
 bool Navigation::moveToGoal(float xGoal, float yGoal, float phiGoal){
 	// Set up and wait for actionClient.
@@ -33,6 +40,48 @@ bool Navigation::moveToGoal(float xGoal, float yGoal, float phiGoal){
         return false;
     }
 }
+
+void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
+    width = msg->info.width;
+    height = msg->info.height;
+    resolution = msg->info.resolution;
+    origin = msg->info.origin;
+    data = msg->data;
+    ROS_INFO("Map: (%d, %d) retrieved", width, height);
+    // only get map once
+    mapSub.unregister();
+}
+
+void getViewPoints(Boxes &boxes) {
+    float margin = 10;
+    int i = 0;
+
+    for(auto b: boxes) {
+        std::vector<std::vector<float>> view_points;
+        float x = b[0];
+        float y = b[1];
+        float angle = b[2];
+        
+        // generate view points
+        float ang_delta = M_PI / (num_view_points + 1);
+        for (int i = 0; i < num_view_points; i++) {
+            float view_ang = angle - M_PI/2.0 + (i+1)*ang_delta;
+            float view_x = x + margin * cos(view_ang);
+            float view_y = y + margin * sin(view_ang);
+
+            std::vector<float> view_pose{view_x, view_y, view_ang};
+            view_points.push_back(view_pose);
+        }
+
+        // add to current box 
+        box_view_points.insert(
+            std::pair<int,std::vector<std::vector<float>>>(
+                i, view_points
+        ));
+        i++:
+    }
+}
+
 
 std::vector<std::vector<float>> Navigation::getTraversalOrder(std::vector<std::vector<float>> coords, int starting_pos){
     // Modified travelling salesman problem solution from: https://www.geeksforgeeks.org/traveling-salesman-problem-tsp-implementation/

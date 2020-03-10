@@ -3,14 +3,14 @@
 #include <robot_pose.h>
 #include <imagePipeline.h>
 
+
 int main(int argc, char** argv) {
     // Setup ROS.
     ros::init(argc, argv, "contest2");
     ros::NodeHandle n;
 
-    // subscribe to map server to grab map 
-    Navigation nav();
-    ros::Subscriber mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, &nav);
+    // subscribe to map server to grab map (only once)
+    Navigation nav(&n, 3);
 
     // Robot pose object + subscriber.
     RobotPose robotPose(0,0,0);
@@ -55,11 +55,11 @@ int main(int argc, char** argv) {
 }
 
 
-"""
+/*
 1. localize to determine starting position
 2. determinze objecgt traversal order 
 3. generate veiw points (margin is half wall size + half robot size + delta)
 4. order in a sequence (optioanlly insert starting point) (this is done)
 4. start traversing
 5. return to start 
-"""
+*/
