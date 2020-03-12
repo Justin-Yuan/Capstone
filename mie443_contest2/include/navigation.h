@@ -33,7 +33,7 @@ class Navigation {
 			boxes = boxes;
 
 			// localization and image stuff
-			amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
+			// amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
 			imagePipeline = ImagePipeline imagePipeline(n);
 		}
 

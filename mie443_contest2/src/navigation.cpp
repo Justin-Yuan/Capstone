@@ -113,7 +113,11 @@ int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
 
 void Navigation::localizeStartingPose() {
     ros::spinOnce();
-    std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
+    std::vector<float> starting_pos;
+    starting_pos.push_back(robotPose.x);
+    starting_pos.push_back(robotPose.y);
+    starting_pos.push_back(robotPose.phi);
+    // {robotPose.x, robotPose.y, robotPose.phi};
     origin = starting_pos;
 }
 
@@ -196,13 +200,13 @@ void Navigation::traverseBox(int box_idx) {
 }
 
 
-void logImageIDs() {
+void Navigation::logImageIDs() {
     // load current image recognition progress
     for (int i = 0; i < boxes.coords.size(); i++) {
         int img_id = imagePipeline.box_to_ID(i);
         std::string img_name = imagePipeline.ID_to_name(img_id);
-        float x = boxes.coords[0];
-        float y = boxes.coords[1];
-        ROS_INFO("Box %d is image %d (%s) at (%f, %f)", i, img_id, img_name, x, y);
+        float x = boxes.coords[i][0];
+        float y = boxes.coords[i][1];
+        ROS_INFO("Box %d is image %d (%s) at (%f, %f)", i, img_id, img_name.c_str(), x, y);
     }
 }
