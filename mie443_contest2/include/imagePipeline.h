@@ -6,6 +6,7 @@
 #include <cv.h>
 #include <cv_bridge/cv_bridge.h>
 #include <boxes.h>
+#include <vector>
 
 // Matching status
 #define RAISIN 0
@@ -62,8 +63,8 @@ class ImagePipeline {
             return name;
         }
 
-        inline std::string box_to_name()
+        inline std::string box_to_name(int boxID)
         {
-            return ID_to_name(box_to_ID);
+            return ID_to_name(box_to_ID(boxID));
         }
 };

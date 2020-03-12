@@ -9,6 +9,9 @@
 #include <move_base_msgs/MoveBaseAction.h>
 #include <tf/transform_datatypes.h>
 #include <nav_msgs/OccupancyGrid.h>
+#include <std_msgs/String.h>
+#include <string>
+
 
 #include <robot_pose.h>
 #include <imagePipeline.h>
@@ -34,7 +37,7 @@ class Navigation {
 			imagePipeline = ImagePipeline imagePipeline(n);
 		}
 
-		void traverseAllBoxes(Boxes &boxes);
+		void traverseAllBoxes();
 		int getCurrentBoxId();
 		void logImageIDs();
 
@@ -43,7 +46,7 @@ class Navigation {
 		int height;
 		float resolution;
 		std::vector<float> origin;
-		int[] map;
+		// int[] map;
 
 		RobotPose robotPose(0, 0, 0);
 		ros::Subscriber mapSub, amclSub;

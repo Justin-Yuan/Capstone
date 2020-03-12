@@ -170,7 +170,7 @@ void Navigation::traverseBox(int box_idx) {
         std::vector<std::vector<float>> view_points = it->second;
         int start_idx = 0;
         int end_idx = view_points.size()-1; 
-        int step = 1:
+        int step = 1;
 
         float dist_first = getDist(curr_pos, view_points[start_idx]);
         float dist_last = getDist(curr_pos, view_points[end_idx]);
@@ -200,7 +200,7 @@ void logImageIDs() {
     // load current image recognition progress
     for (int i = 0; i < boxes.coords.size(); i++) {
         int img_id = imagePipeline.box_to_ID(i);
-        String img_name = imagePipeline.ID_to_name(img_id);
+        std::string img_name = imagePipeline.ID_to_name(img_id);
         float x = boxes.coords[0];
         float y = boxes.coords[1];
         ROS_INFO("Box %d is image %d (%s) at (%f, %f)", i, img_id, img_name, x, y);

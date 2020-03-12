@@ -16,7 +16,10 @@ ImagePipeline::ImagePipeline(ros::NodeHandle &n)
 {
     image_transport::ImageTransport it(n);
     sub = it.subscribe(IMAGE_TOPIC, 1, &ImagePipeline::imageCallback, this);
-    templateIDs = vector.assign(5, -1);
+    // reset all image template ids 
+    for (int i = 0; i < templateIDs.size(); i++) {
+        templateIDs[i] = -1;
+    }
     isValid = false;
 }
 
@@ -91,9 +94,9 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
                 templateID = BLANK;
         }
 
-        // Use: boxes.templates
-        cv::imshow("view", img);
-        cv::waitKey(10);
+        // // Use: boxes.templates
+        // cv::imshow("view", img);
+        // cv::waitKey(10);
     }
 
     return templateID;
