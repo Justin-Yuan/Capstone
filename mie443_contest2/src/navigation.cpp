@@ -1,14 +1,4 @@
 #include <navigation.h>
-#include <actionlib/client/simple_action_client.h>
-#include <move_base_msgs/MoveBaseAction.h>
-#include <tf/transform_datatypes.h>
-#include <nav_msgs/OccupancyGrid.h>
-
-#include <boxes.h>
-#include <vector>
-#include <map>
-import <math.h>
-
 
 bool Navigation::moveToGoal(float xGoal, float yGoal, float phiGoal){
 	// Set up and wait for actionClient.
@@ -41,7 +31,7 @@ bool Navigation::moveToGoal(float xGoal, float yGoal, float phiGoal){
     }
 }
 
-void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
+void Navigation::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     width = msg->info.width;
     height = msg->info.height;
     resolution = msg->info.resolution;
@@ -52,7 +42,7 @@ void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     mapSub.unregister();
 }
 
-void getViewPoints(Boxes &boxes) {
+void Navigation::getViewPoints(Boxes &boxes) {
     float margin = 10;
     int i = 0;
 
@@ -78,12 +68,12 @@ void getViewPoints(Boxes &boxes) {
             std::pair<int,std::vector<std::vector<float>>>(
                 i, view_points
         ));
-        i++:
+        i++;
     }
 }
 
 
-std::vector<std::vector<float>> Navigation::getTraversalOrder(std::vector<std::vector<float>> coords, int starting_pos){
+std::vector<int> Navigation::getTraversalOrder(std::vector<std::vector<float>> coords, int starting_pos){
     // Modified travelling salesman problem solution from: https://www.geeksforgeeks.org/traveling-salesman-problem-tsp-implementation/
 
     // store all vertex apart from source vertex 
@@ -103,18 +93,18 @@ std::vector<std::vector<float>> Navigation::getTraversalOrder(std::vector<std::v
         for (int i = 0; i < vertex.size() - 1; i++) { 
             current_pathweight += getDist(coords[vertex[i]], coords[vertex[i+1]]);
         } 
-        current_pathweight += getDist(coords[vertex[i]], coords[starting_pos]); 
+        current_pathweight += getDist(coords[vertex[vertex.size()-1]], coords[starting_pos]); 
   
         // update minimum 
         if (current_pathweight < min_path){
             min_path = current_pathweight; 
-            min_vertex = vertex
+            min_vertex = vertex;
         }
         
     } while (next_permutation(vertex.begin(), vertex.end())); 
     
     // Append starting coord to end of vector.
-    vertex.push_back(starting_pos)
+    vertex.push_back(starting_pos);
     return vertex;
 }
 

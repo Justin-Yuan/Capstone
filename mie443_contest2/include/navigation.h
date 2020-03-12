@@ -5,6 +5,13 @@
 #include "ros/ros.h"
 #include <vector>
 #include <map>
+#include <actionlib/client/simple_action_client.h>
+#include <move_base_msgs/MoveBaseAction.h>
+#include <tf/transform_datatypes.h>
+#include <nav_msgs/OccupancyGrid.h>
+
+#include <boxes.h>
+#include <math.h>
 
 
 class Navigation {
@@ -25,6 +32,8 @@ class Navigation {
 		}
     
 		static bool moveToGoal(float xGoal, float yGoal, float phiGoal);
-		std::vector<std::vector<float>> Navigation::getTraversalOrder(std::vector<std::vector<float>> coords, int starting_pos);
-		int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2);
+		void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
+		void getViewPoints(Boxes &boxes);
+		std::vector<int> getTraversalOrder(std::vector<std::vector<float>> coords, int starting_pos);
+		int getDist(std::vector<float> coor1, std::vector<float> coor2);
 };
