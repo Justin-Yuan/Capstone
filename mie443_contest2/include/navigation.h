@@ -24,7 +24,7 @@ class Navigation {
 	public:
 		Boxes boxes;
 
-		Navigation(ros::NodeHandle n, Boxes &boxes, int n_view_points) : robotPose(0, 0, 0){
+		Navigation(ros::NodeHandle &n, Boxes &boxes, int n_view_points) : robotPose(0, 0, 0), imagePipeline(n){
 			// map stuff
 			mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, this);
 			num_view_points = num_view_points;
@@ -34,7 +34,6 @@ class Navigation {
 
 			// localization and image stuff
 			amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
-			imagePipeline = ImagePipeline(n);
 		}
 
 		void traverseAllBoxes();
@@ -46,7 +45,7 @@ class Navigation {
 		int height;
 		float resolution;
 		std::vector<float> origin;
-		int[] map;
+		// int[] map;
 
 		RobotPose robotPose;
 		ros::Subscriber mapSub, amclSub;

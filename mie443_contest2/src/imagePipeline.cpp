@@ -3,6 +3,10 @@
 #define IMAGE_TYPE sensor_msgs::image_encodings::BGR8
 #define IMAGE_TOPIC "camera/rgb/image_raw" // kinect:"camera/rgb/image_raw" webcam:"camera/image"
 
+using namespace cv;
+using namespace std;
+using namespace cv::xfeatures2d;
+
 ImagePipeline::ImagePipeline(ros::NodeHandle &n)
 {
     image_transport::ImageTransport it(n);
@@ -36,7 +40,7 @@ inline void ImagePipeline::finalizeTemplateID(int boxID)
     set_templateID(bestIndex - 2, boxID); // note that getTemplateID returns -2 to 2, index is however 0 to 4
 }
 
-inline int finalizeTemplateIDs(int boxID)
+inline int ImagePipeline::finalizeTemplateIDs(int boxID)
 {
     // finalize the templateIDs vector once and for all
     for (int box = 0; i < NumBoxes; box++)
@@ -67,7 +71,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
     {
         /***YOUR CODE HERE***/
         // Store rectangle areas of each img-target matching in an array
-        vector<float> matchedAreas(NumTargets, 0.0);
+        std::vector<float> matchedAreas(NumTargets, 0.0);
         for (int i = 0; i < NumTargets; i++)
         {
             cv::Mat target = boxes.templates[i];
@@ -138,18 +142,17 @@ void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr &msg)
     }
 }
 
-float ImagePipeline::getArea(std::vector<Point2f> scene_corners, cv::Mat img_object)
+float ImagePipeline::getArea(std::vector<cv::Point2f> scene_corners, cv::Mat img_object)
 {
     if (scene_corners.size() < 4)
     {
         cout << " scene_corners size not correct, should be 4 " << endl;
         return 0.0;
-    }
-    auto points[4] = {};
-    for (int i : scene_corners.size())
-    {
-        points[i] = scene_corners[i] + Point2f(img_object.cols, 0);
-        cout << points[i].x << " " << points[i].y << endl;
+    }  
+    vector<Point2f> points(4);
+    for (int i; i < scene_corners.size(); i++){
+        points[i] = scene_corners[i] + Point2f( img_object.cols, 0);
+        cout << points[i].x << " "<<points[i].y<<endl;
     }
     // Get corner points for rectangle
     auto x_min = fmin(fmin(points[0].x, points[1].x), fmin(points[2].x, points[3].x));
@@ -173,7 +176,7 @@ float ImagePipeline::performSURF(cv::Mat img_scene, cv::Mat img_object)
     //-- Step 1 & 2: Detect the keypoints and calculate descriptors using SURF Detector
     int minHessian = 400;
     Ptr<SURF> detector = SURF::create(minHessian);
-    vector<KeyPoint> keypoints_object, keypoints_scene;
+    std::vector<KeyPoint> keypoints_object, keypoints_scene;
     Mat descriptors_object, descriptors_scene;
     detector->detectAndCompute(img_object, Mat(), keypoints_object,
                                descriptors_object);
@@ -252,7 +255,7 @@ float ImagePipeline::performSURF(cv::Mat img_scene, cv::Mat img_object)
     line(img_matches, scene_corners[2] + Point2f(img_object.cols, 0), scene_corners[3] + Point2f(img_object.cols, 0), Scalar(0, 255, 0), 4);
     line(img_matches, scene_corners[3] + Point2f(img_object.cols, 0), scene_corners[0] + Point2f(img_object.cols, 0), Scalar(0, 255, 0), 4);
 
-    area = getArea(scene_corners, img_object);
+    float area = getArea(scene_corners, img_object);
 
     //-- Show detected matches
     imshow("Good Matches & Object detection", img_matches);
