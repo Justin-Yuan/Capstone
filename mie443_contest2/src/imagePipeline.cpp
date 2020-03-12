@@ -3,29 +3,46 @@
 #define IMAGE_TYPE sensor_msgs::image_encodings::BGR8
 #define IMAGE_TOPIC "camera/rgb/image_raw" // kinect:"camera/rgb/image_raw" webcam:"camera/image"
 
-#define NumTargets 3
-#define MaxArea 40000.
-#define MinArea 1000.
-#define MaxGoodArea 35000.
-#define MinGoodArea 5000.
-
-#define AMBIGUITY -1
-#define BLANK -2
-
 ImagePipeline::ImagePipeline(ros::NodeHandle &n)
 {
     image_transport::ImageTransport it(n);
     sub = it.subscribe(IMAGE_TOPIC, 1, &ImagePipeline::imageCallback, this);
-    // reset all image template ids 
-    for (int i = 0; i < templateIDs.size(); i++) {
-        templateIDs[i] = -1;
+    // reset all image template ids
+    for (int box = 0; box < templateIDs.size(); box++)
+    {
+        templateIDs[box] = -1;
     }
     isValid = false;
 }
 
-void ImagePipeline::updateTemplateID(Boxes &boxes, int boxID)
+void ImagePipeline::updateLogits(Boxes &boxes, int boxID)
 {
-    set_templateID(getTemplateID(Boxes & boxes), boxID);
+    int iMatch = getTemplateID(Boxes & boxes) + 2; // note that getTemplateID returns -2 to 2
+    for (int i = 0; i < NumStatus; i++)
+    {
+        change = (i == iMatch) ? (alpha) : (beta);
+        logits[boxID][i] += change;
+    }
+}
+
+inline void ImagePipeline::finalizeTemplateID(int boxID)
+{
+    vector<float> currLogits = logits[boxID];
+
+    // bestIndex = best of softmax or simply the max
+    float maxLogit = std::max_element(std::begin(currLogits), std::end(currLogits));
+    int bestIndex = std::distance(std::begin(currLogits), maxLogit);
+
+    set_templateID(bestIndex - 2, boxID); // note that getTemplateID returns -2 to 2, index is however 0 to 4
+}
+
+inline int finalizeTemplateIDs(int boxID)
+{
+    // finalize the templateIDs vector once and for all
+    for (int box = 0; i < NumBoxes; box++)
+    {
+        finalizeTemplateID(box);
+    }
 }
 
 int ImagePipeline::getTemplateID(Boxes &boxes)
@@ -123,14 +140,16 @@ void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
 float ImagePipeline::getArea(std::vector<Point2f> scene_corners, cv::Mat img_object)
 {
-    if (scene_corners.size() < 4){
-        cout << " scene_corners size not correct, should be 4 "<<endl;
+    if (scene_corners.size() < 4)
+    {
+        cout << " scene_corners size not correct, should be 4 " << endl;
         return 0.0;
-    }  
+    }
     auto points[4] = {};
-    for (int i : scene_corners.size()){
-        points[i] = scene_corners[i] + Point2f( img_object.cols, 0);
-        cout << points[i].x << " "<<points[i].y<<endl;
+    for (int i : scene_corners.size())
+    {
+        points[i] = scene_corners[i] + Point2f(img_object.cols, 0);
+        cout << points[i].x << " " << points[i].y << endl;
     }
     // Get corner points for rectangle
     auto x_min = fmin(fmin(points[0].x, points[1].x), fmin(points[2].x, points[3].x));
@@ -138,7 +157,7 @@ float ImagePipeline::getArea(std::vector<Point2f> scene_corners, cv::Mat img_obj
     auto x_max = fmax(fmax(points[1].x, points[1].x), fmax(points[2].x, points[3].x));
     auto y_max = fmax(fmax(points[1].y, points[1].y), fmax(points[2].y, points[3].y));
 
-    float length = abs(x_max - x_min); 
+    float length = abs(x_max - x_min);
     float width = abs(y_max - y_min);
     float area = length * width;
 
