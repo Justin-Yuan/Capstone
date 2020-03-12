@@ -31,7 +31,7 @@ int main(int argc, char **argv)
     }
 
     // nav contains subscriber to map_server, amcl and imagePipeline
-    Navigation nav(&n, boxes, 3);
+    Navigation nav(n, boxes, 3);
 
     // Execute strategy.
     while (ros::ok())

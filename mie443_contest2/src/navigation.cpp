@@ -35,7 +35,6 @@ void Navigation::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     width = msg->info.width;
     height = msg->info.height;
     resolution = msg->info.resolution;
-    data = msg->data;
     ROS_INFO("Map: (%d, %d) retrieved", width, height);
     // only get map once
     mapSub.unregister();
@@ -113,11 +112,7 @@ int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
 
 void Navigation::localizeStartingPose() {
     ros::spinOnce();
-    std::vector<float> starting_pos;
-    starting_pos.push_back(robotPose.x);
-    starting_pos.push_back(robotPose.y);
-    starting_pos.push_back(robotPose.phi);
-    // {robotPose.x, robotPose.y, robotPose.phi};
+    std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
     origin = starting_pos;
 }
 
@@ -155,7 +150,7 @@ void Navigation::traverseAllBoxes() {
         // periodic log 
         logImageIDs();
     }
-    moveToGoal(origin)
+    moveToGoal(origin[0], origin[1], origin[2]);
     logImageIDs();
 }
 

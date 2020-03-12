@@ -24,7 +24,7 @@ class Navigation {
 	public:
 		Boxes boxes;
 
-		Navigation(ros::NodeHandle &n, Boxes &boxes, int n_view_points) {
+		Navigation(ros::NodeHandle n, Boxes &boxes, int n_view_points) : robotPose(0, 0, 0){
 			// map stuff
 			mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, this);
 			num_view_points = num_view_points;
@@ -48,7 +48,7 @@ class Navigation {
 		std::vector<float> origin;
 		int[] map;
 
-		RobotPose robotPose(0, 0, 0);
+		RobotPose robotPose;
 		ros::Subscriber mapSub, amclSub;
 		ImagePipeline imagePipeline;
 
@@ -59,7 +59,7 @@ class Navigation {
     
 		static bool moveToGoal(float xGoal, float yGoal, float phiGoal);
 		void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
-		void getViewPoints(Boxes &boxes);
+		void getViewPoints(std::vector<std::vector<float>> coords);
 		std::vector<int> getTraversalOrder(std::vector<std::vector<float>> coords, int starting_pos);
 		void localizeStartingPose();
 		int getDist(std::vector<float> coor1, std::vector<float> coor2);
