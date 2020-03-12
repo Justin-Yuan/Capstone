@@ -148,8 +148,11 @@ void Navigation::traverseAllBoxes() {
     // traverse every box and then return to starting point
     for (int i = 0; i < indices.size() - 1; i++) {
         traverseBox(indices[i]);
+        // periodic log 
+        logImageIDs();
     }
     moveToGoal(origin)
+    logImageIDs();
 }
 
 void Navigation::traverseBox(int box_idx) {
