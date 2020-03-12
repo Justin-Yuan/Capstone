@@ -31,21 +31,33 @@ void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
 float computeArea(std::vector<Point2f> scene_corners, cv::Mat img_object) {
     // Might need additional checks
-    if (scene_corners.size() < 4) return 0.0;
-    auto pointA = scene_corners[0] + Point2f( img_object.cols, 0);
-    auto pointB = scene_corners[1] + Point2f( img_object.cols, 0);
-    auto pointC = scene_corners[2] + Point2f( img_object.cols, 0);
-    auto pointD = scene_corners[3] + Point2f( img_object.cols, 0);
+    if (scene_corners.size() < 4) return 0.0; //
+    auto points[4] = {};
+    for (int i : scene_corners.size()){
+        points[i] = scene_corners[i] + Point2f( img_object.cols, 0);
+        cout << points[i].x << " "<<points[i].y<<endl;
+    }
 
-    cout << pointA.x << " "<<pointA.y<<endl;
-    cout << pointB.x << " "<<pointB.y<<endl;
-    cout << pointC.x << " "<<pointC.y<<endl;
-    cout << pointD.x << " "<<pointD.y<<endl;
+    // auto pointA = scene_corners[0] + Point2f( img_object.cols, 0);
+    // auto pointB = scene_corners[1] + Point2f( img_object.cols, 0);
+    // auto pointC = scene_corners[2] + Point2f( img_object.cols, 0);
+    // auto pointD = scene_corners[3] + Point2f( img_object.cols, 0);
 
-    auto xMin = fmin(fmin(pointA.x, pointB.x), fmin(pointC.x, pointD.x));
-    auto yMin = fmin(fmin(pointA.y, pointB.y), fmin(pointC.y, pointD.y));
-    auto xMax = fmax(fmax(pointA.x, pointB.x), fmax(pointC.x, pointD.x));
-    auto yMax = fmax(fmax(pointA.y, pointB.y), fmax(pointC.y, pointD.y));
+    // cout << pointA.x << " "<<pointA.y<<endl;
+    // cout << pointB.x << " "<<pointB.y<<endl;
+    // cout << pointC.x << " "<<pointC.y<<endl;
+    // cout << pointD.x << " "<<pointD.y<<endl;
+
+    // auto xMin = fmin(fmin(pointA.x, pointB.x), fmin(pointC.x, pointD.x));
+    // auto yMin = fmin(fmin(pointA.y, pointB.y), fmin(pointC.y, pointD.y));
+    // auto xMax = fmax(fmax(pointA.x, pointB.x), fmax(pointC.x, pointD.x));
+    // auto yMax = fmax(fmax(pointA.y, pointB.y), fmax(pointC.y, pointD.y));
+
+
+    auto xMin = fmin(fmin(points[0].x, points[1].x), fmin(points[2].x, points[3].x));
+    auto yMin = fmin(fmin(points[0].y, points[1].y), fmin(points[2].y, points[3].y));
+    auto xMax = fmax(fmax(points[1].x, points[1].x), fmax(points[2].x, points[3].x));
+    auto yMax = fmax(fmax(points[1].y, points[1].y), fmax(points[2].y, points[3].y));
 
 
     float s1 = xMax - xMin;
@@ -54,18 +66,22 @@ float computeArea(std::vector<Point2f> scene_corners, cv::Mat img_object) {
     float area = s1 * s2;
     
     //return positive area it ressembles a rectanle, otherwise return negative and equal area
-    if ((abs(pointA.x - pointD.x) < 50) && (abs(pointB.x - pointC.x) < 50) && (abs(pointA.y - pointB.y) < 50) && (abs(pointC.y - pointD.y) < 50))
+    // if ((abs(pointA.x - pointD.x) < 50) && (abs(pointB.x - pointC.x) < 50) && (abs(pointA.y - pointB.y) < 50) && (abs(pointC.y - pointD.y) < 50))
+    if ((abs(points[0].x - points[3].x) < 50) && (abs(points[1].x - points[2].x) < 50) && (abs(points[0].y - points[1].y) < 50) && (abs(points[2].y - points[3].y) < 50))
         return area;
     else
         return -1*area;
 }
 
 int ImagePipeline::getTemplateID(Boxes &boxes){
+    std::string save_im_path = "";
+    cv::imwrite(save_im_path, scene_transformed);
 
     // read template images. TODO: use load templates function in boxes.cpp
     cv::Mat image_array_1 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template1.jpg",IMREAD_GRAYSCALE);
     cv::Mat image_array_2 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template2.jpg",IMREAD_GRAYSCALE);
     cv::Mat image_array_3 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template3.jpg",IMREAD_GRAYSCALE);
+
 
     int template_id = -1;
     if (!isValid)
