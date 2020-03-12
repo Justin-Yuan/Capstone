@@ -83,14 +83,12 @@ float computeArea(std::vector<Point2f> scene_corners, cv::Mat img_object)
 }
 
 int ImagePipeline::getTemplateID(Boxes &boxes){
-    std::string save_im_path = "";
-    cv::imwrite(save_im_path, scene_transformed);
+    int templateID = AMBIGUITY;
 
     cv::Mat target_1 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template1.jpg", IMREAD_GRAYSCALE);
     cv::Mat target_2 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template2.jpg", IMREAD_GRAYSCALE);
     cv::Mat target_3 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template3.jpg", IMREAD_GRAYSCALE);
 
-    int templateID = -1;
     if (!isValid)
     {
         std::cout << "ERROR: INVALID IMAGE!" << std::endl;
