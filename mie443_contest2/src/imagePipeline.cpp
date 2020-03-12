@@ -16,6 +16,7 @@ ImagePipeline::ImagePipeline(ros::NodeHandle &n)
 {
     image_transport::ImageTransport it(n);
     sub = it.subscribe(IMAGE_TOPIC, 1, &ImagePipeline::imageCallback, this);
+    templateIDs = vector.assign(5, -1);
     isValid = false;
 }
 
