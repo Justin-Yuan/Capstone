@@ -42,11 +42,11 @@ void Navigation::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     mapSub.unregister();
 }
 
-void Navigation::getViewPoints(Boxes &boxes) {
+void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
     float margin = 10;
     int i = 0;
 
-    for(auto b: boxes) {
+    for(auto b: coords) {
         std::vector<std::vector<float>> view_points;
         float x = b[0];
         float y = b[1];
@@ -112,16 +112,18 @@ int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
     return pow(pow((coor1[0] - coor2[0]),2) + pow((coor1[1] - coor2[1]),2),1/2);
 }
 
-void Navigation::getTrajectory(Boxes &boxes,  int starting_pos) {
+void Navigation::setupTrajectory(Boxes &boxes, std::vector<float> starting_pos) {
     // set up all view points first 
-    getViewPoints(&boxes);
-    // determin box traversal order 
-    std::vector<int> indices = getTraversalOrder(&boxes, starting_pos);
-    // combine box view points according to traversal order to form trajectory
-    for (auto i : indices) {
-        for () {
+    getViewPoints(boxes.coords);
 
-            traj_points.push_back();
-        }
-    }
+    // determin box traversal order 
+    std::vector<std::vector<float>> traversal_path = boxes.coords;
+    traversal_path.push_back(starting_pose);
+    std::vector<int> indices = getTraversalOrder(traversal_path, traversal_path.size()-1);
+
+    
+}
+
+void Navigation::traverseBox(int box_idx) {
+
 }
