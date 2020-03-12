@@ -194,8 +194,12 @@ void Navigation::traverseBox(int box_idx) {
 
 
 void logImageIDs() {
+    // load current image recognition progress
     for (int i = 0; i < boxes.coords.size(); i++) {
-        int img_id = ;
-        ROS_INFO("Image %d is %s at (%f, %f)", );
+        int img_id = imagePipeline.box_to_ID(i);
+        String img_name = imagePipeline.ID_to_name(img_id);
+        float x = boxes.coords[0];
+        float y = boxes.coords[1];
+        ROS_INFO("Box %d is image %d (%s) at (%f, %f)", i, img_id, img_name, x, y);
     }
 }
