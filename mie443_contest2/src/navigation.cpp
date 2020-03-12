@@ -136,6 +136,37 @@ void Navigation::traverseAllBoxes(Boxes &boxes) {
     moveToGoal(origin)
 }
 
-void Navigation::traverseBox(int box_idx) {
+void Navigation::traverseBox(std::vector<float> curr_pos, int box_idx) {
+    // traverse the given box from current position 
+    std::map<int,std::vector<std::vector<float>>>::iterator it = box_view_points.find(box_idx); 
+    if(it == box_view_points.end()) {
+        ROS_INFO("Cannot find box with given index...");
+    }
+    else {
+        std::vector<std::vector<float>> view_points = it->second;
+        // determine forward or backward traversal order
+        int start_idx = 0;
+        int end_idx = view_points.size()-1; 
+        int step = 1:
 
+        float dist_first = getDist(curr_pos, view_points[start_idx]);
+        float dist_last = getDist(curr_pos, view_points[end_idx]);
+        if (dist_first > dist_last) {
+            start_idx = view_points.size()-1;
+            end_idx = 0;
+            step = -1;
+        }
+
+        // start traversing 
+        int curr_idx = start_idx;
+        while (curr_idx != end_idx) {
+            std::vector<float> curr_goal = view_points[curr_idx];
+            // move to veiw point 
+            moveToGoal(curr_goal[0], curr_goal[1], curr_goal[2]);
+            // do image stuff 
+            // pass
+            curr_idx += step;
+        } 
+        ROS_INFO("Traversed box %d", box_idx);
+    }
 }

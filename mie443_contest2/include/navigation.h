@@ -38,7 +38,7 @@ class Navigation {
 		int num_view_points;
 		std::map<int,std::vector<std::vector<float>>> box_view_points;
 		std::vector<std::vector<float>> traj_points;
-    
+		
     
 		static bool moveToGoal(float xGoal, float yGoal, float phiGoal);
 		void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
