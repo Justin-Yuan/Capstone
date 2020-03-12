@@ -3,6 +3,15 @@
 #define IMAGE_TYPE sensor_msgs::image_encodings::BGR8
 #define IMAGE_TOPIC "camera/rgb/image_raw" // kinect:"camera/rgb/image_raw" webcam:"camera/image"
 
+#define NumTargets 3
+#define MaxArea 40000.
+#define MinArea 1000.
+#define MaxGoodArea 35000.
+#define MinGoodArea 5000.
+
+#define AMBIGUITY -1
+#define BLANK -2
+
 ImagePipeline::ImagePipeline(ros::NodeHandle &n)
 {
     image_transport::ImageTransport it(n);
@@ -29,45 +38,59 @@ void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr &msg)
     }
 }
 
-float computeArea(std::vector<Point2f> scene_corners, cv::Mat img_object) {
+float computeArea(std::vector<Point2f> scene_corners, cv::Mat img_object)
+{
     // Might need additional checks
-    if (scene_corners.size() < 4) return 0.0;
-    auto pointA = scene_corners[0] + Point2f( img_object.cols, 0);
-    auto pointB = scene_corners[1] + Point2f( img_object.cols, 0);
-    auto pointC = scene_corners[2] + Point2f( img_object.cols, 0);
-    auto pointD = scene_corners[3] + Point2f( img_object.cols, 0);
+    if (scene_corners.size() < 4) return 0.0; //
+    auto points[4] = {};
+    for (int i : scene_corners.size()){
+        points[i] = scene_corners[i] + Point2f( img_object.cols, 0);
+        cout << points[i].x << " "<<points[i].y<<endl;
+    }
 
-    cout << pointA.x << " "<<pointA.y<<endl;
-    cout << pointB.x << " "<<pointB.y<<endl;
-    cout << pointC.x << " "<<pointC.y<<endl;
-    cout << pointD.x << " "<<pointD.y<<endl;
+    // auto pointA = scene_corners[0] + Point2f( img_object.cols, 0);
+    // auto pointB = scene_corners[1] + Point2f( img_object.cols, 0);
+    // auto pointC = scene_corners[2] + Point2f( img_object.cols, 0);
+    // auto pointD = scene_corners[3] + Point2f( img_object.cols, 0);
 
-    auto xMin = fmin(fmin(pointA.x, pointB.x), fmin(pointC.x, pointD.x));
-    auto yMin = fmin(fmin(pointA.y, pointB.y), fmin(pointC.y, pointD.y));
-    auto xMax = fmax(fmax(pointA.x, pointB.x), fmax(pointC.x, pointD.x));
-    auto yMax = fmax(fmax(pointA.y, pointB.y), fmax(pointC.y, pointD.y));
+    // cout << pointA.x << " "<<pointA.y<<endl;
+    // cout << pointB.x << " "<<pointB.y<<endl;
+    // cout << pointC.x << " "<<pointC.y<<endl;
+    // cout << pointD.x << " "<<pointD.y<<endl;
 
+    // auto xMin = fmin(fmin(pointA.x, pointB.x), fmin(pointC.x, pointD.x));
+    // auto yMin = fmin(fmin(pointA.y, pointB.y), fmin(pointC.y, pointD.y));
+    // auto xMax = fmax(fmax(pointA.x, pointB.x), fmax(pointC.x, pointD.x));
+    // auto yMax = fmax(fmax(pointA.y, pointB.y), fmax(pointC.y, pointD.y));
+
+
+    auto xMin = fmin(fmin(points[0].x, points[1].x), fmin(points[2].x, points[3].x));
+    auto yMin = fmin(fmin(points[0].y, points[1].y), fmin(points[2].y, points[3].y));
+    auto xMax = fmax(fmax(points[1].x, points[1].x), fmax(points[2].x, points[3].x));
+    auto yMax = fmax(fmax(points[1].y, points[1].y), fmax(points[2].y, points[3].y));
 
     float s1 = xMax - xMin;
     float s2 = yMax - yMin;
 
     float area = s1 * s2;
-    
+
     //return positive area it ressembles a rectanle, otherwise return negative and equal area
-    if ((abs(pointA.x - pointD.x) < 50) && (abs(pointB.x - pointC.x) < 50) && (abs(pointA.y - pointB.y) < 50) && (abs(pointC.y - pointD.y) < 50))
+    // if ((abs(pointA.x - pointD.x) < 50) && (abs(pointB.x - pointC.x) < 50) && (abs(pointA.y - pointB.y) < 50) && (abs(pointC.y - pointD.y) < 50))
+    if ((abs(points[0].x - points[3].x) < 50) && (abs(points[1].x - points[2].x) < 50) && (abs(points[0].y - points[1].y) < 50) && (abs(points[2].y - points[3].y) < 50))
         return area;
     else
-        return -1*area;
+        return -1 * area;
 }
 
 int ImagePipeline::getTemplateID(Boxes &boxes){
+    std::string save_im_path = "";
+    cv::imwrite(save_im_path, scene_transformed);
 
-    // read template images. TODO: use load templates function in boxes.cpp
-    cv::Mat image_array_1 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template1.jpg",IMREAD_GRAYSCALE);
-    cv::Mat image_array_2 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template2.jpg",IMREAD_GRAYSCALE);
-    cv::Mat image_array_3 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template3.jpg",IMREAD_GRAYSCALE);
+    cv::Mat target_1 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template1.jpg", IMREAD_GRAYSCALE);
+    cv::Mat target_2 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template2.jpg", IMREAD_GRAYSCALE);
+    cv::Mat target_3 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template3.jpg", IMREAD_GRAYSCALE);
 
-    int template_id = -1;
+    int templateID = -1;
     if (!isValid)
     {
         std::cout << "ERROR: INVALID IMAGE!" << std::endl;
@@ -81,57 +104,70 @@ int ImagePipeline::getTemplateID(Boxes &boxes){
     }
     else
     {
-        /***YOUR CODE HERE***/    
-
-        // initialize 
-        vector<float> rectAreas(3, 0.0);
-        int checkImage = 0;
-
-        // Get bounding box areas
-        checkImage = compareImages(img, image_array_1, rectAreas[0]); //need to fix this
-        cout << "IMG0-> Matches: " << checkImage << " Area: " << rectAreas[0] << endl;
-
-        checkImage = compareImages(img, image_array_2, rectAreas[1]);
-        cout << "IMG1-> Matches: " << checkImage << " Area: " << rectAreas[1] << endl;
-
-        checkImage = compareImages(img, image_array_3, rectAreas[2]);
-        cout << "IMG2-> Matches: " << checkImage << " Area: " << rectAreas[2] << endl;
-
-        // Finding matches
-        int potentialMatch = -1;
-        int matchCount = 0;
-        int definiteNotMatch = 0;
-
-        for (int i = 0; i < rectAreas.size() && matchCount < 2; i++)
+        /***YOUR CODE HERE***/
+        // Store rectangle areas of each img-target matching in an array
+        vector<float> matchedAreas(NumTargets, 0.0);
+        for (int i = 0; i < NumTargets; i++)
         {
-            //If picture fits within area bounds and is a rectange, a match is found
-            if (abs(rectAreas[i]) > 5000.0 && abs(rectAreas[i]) < 35000.0 && rectAreas[i] > 0)
+            switch (i)
             {
-                cout << "MATCH FOUND: image " << i << std::endl;
-                potentialMatch = i;
-                matchCount++;
-                //If picture is far away from the bounds or is not a rectangle, a definite no match is found
+            case 0:
+                target = target_0;
+                break;
+            case 1:
+                target = target_1;
+                break;
+            case 2:
+                target = target_2;
+                break;
             }
-            else if ((abs(rectAreas[i]) < 1000 || abs(rectAreas[i]) > 40000.0 && rectAreas[i] < 0))
+            matchedAreas[i] = performSURF(img, target);
+            cout << "Target " << i << " | area = " << matchedAreas[i] << endl;
+        }
+
+        // Examine each matching area and decide which one (or none) to be chosen
+        int candidateID = -1, candidateCount = 0, antiCandidateCount = 0;
+        for (int i = 0; i < NumTargets && candidateCount < 2; i++)
+        {
+            float area = abs(matchedAreas[i]);
+            bool isRectangle = (matchedAreas[i] > 0);
+            bool isGoodSized = (area < MaxGoodArea && area > MinGoodArea);
+            bool isOutofBound = (area > MinArea || area < MinArea);
+
+            if (isRectangle && isGoodSized)
             {
-                definiteNotMatch++;
+                candidateID = i;
+                candidateCount++;
+                cout << "\n--- Matching target " << i << "---\n";
+            }
+            else if (!isRectangle && isOutofBound)
+            {
+                antiCandidateCount++;
             }
         }
 
-        template_id = (matchCount == 1 ? potentialMatch : -1);
-
-        //If all 3 angles are definite no matches, signal the controller to label this box blank and continue
-        if (definiteNotMatch == 3)
-            template_id = -2;
+        switch (candidateCount)
+        {
+        case 1: // one good match found
+            templateID = candidateID;
+            break;
+        case 0: // other cases
+        case 2:
+        case 3:
+            templateID = AMBIGUITY;
+            break;
+        default: // certain that all three are non-matches
+            if (antiCandidateCount == 3) templateID = BLANK;
+        }
 
         // Use: boxes.templates
         cv::imshow("view", img);
         cv::waitKey(10);
     }
-    return template_id;
+    return templateID;
 }
 
-int compareImages(cv::Mat img_scene, cv::Mat img_object, float &area)
+float performSURF(cv::Mat img_scene, cv::Mat img_object)
 {
     //-- Step 1 & 2: Detect the keypoints and calculate descriptors using SURF Detector
     int minHessian = 400;
@@ -221,9 +257,5 @@ int compareImages(cv::Mat img_scene, cv::Mat img_object, float &area)
     imshow("Good Matches & Object detection", img_matches);
 
     waitKey(5000);
-    return good_matches.size();
+    return area;
 }
-
-//   /** @function readme */
-//   void readme()
-//   { std::cout << " Usage: ./SURF_descriptor <img1> <img2>" << std::endl; }
