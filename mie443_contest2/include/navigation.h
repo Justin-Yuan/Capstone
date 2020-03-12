@@ -22,9 +22,10 @@ class Navigation {
 		geometry_msgs::Pose origin;
 		int[] map;
 		ros::Subscriber mapSub;
+
 		int num_view_points;
 		std::map<int,std::vector<std::vector<float>>> box_view_points;
-		std::vector<std::vector<float>> traj_points;
+
 
 		Navigation(ros::NodeHandle &n, int n_view_points) {
 			mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, this);
