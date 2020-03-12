@@ -35,7 +35,6 @@ void Navigation::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     width = msg->info.width;
     height = msg->info.height;
     resolution = msg->info.resolution;
-    origin = msg->info.origin;
     data = msg->data;
     ROS_INFO("Map: (%d, %d) retrieved", width, height);
     // only get map once
@@ -112,16 +111,20 @@ int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
     return pow(pow((coor1[0] - coor2[0]),2) + pow((coor1[1] - coor2[1]),2),1/2);
 }
 
-void Navigation::setupTrajectory(Boxes &boxes, std::vector<float> starting_pos) {
+void Navigation::traverseAllBoxes(Boxes &boxes) {
     // set up all view points first 
     getViewPoints(boxes.coords);
 
-    // determin box traversal order 
-    std::vector<std::vector<float>> traversal_path = boxes.coords;
-    traversal_path.push_back(starting_pose);
-    std::vector<int> indices = getTraversalOrder(traversal_path, traversal_path.size()-1);
+    // determine box traversal order 
+    std::vector<std::vector<float>> traversal_nodes = boxes.coords;
+    traversal_nodes.push_back(origin);
+    std::vector<int> indices = getTraversalOrder(traversal_nodes, traversal_nodes.size()-1);
 
-    
+    // traverse every box and then return to starting point
+    for (int i = 0; i < indices.size() - 1; i++) {
+        traverseBox(indices[i]);
+    }
+    moveToGoal(origin)
 }
 
 void Navigation::traverseBox(int box_idx) {

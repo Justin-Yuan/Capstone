@@ -133,10 +133,8 @@ int main(int argc, char **argv)
 // 
         // Our code, reference code is commented above due to not compiling (** please ensure code compiles before adding in reference **):
         // Get starting pose, append it to the box coordinates, and then find the traversal path.
-        // vector<int> starting_pose = getStartingPose();
-        std::vector<std::vector<float>> traversal_path = boxes.coords;
-        // traversal_path.push_back(starting_pose);
-        // sort traversal path using our navigation functions.
+        std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
+        nav.origin = starting_pos;
         
         int i;
         for (i = 0; i < traversal_path.size() - 1; i++){

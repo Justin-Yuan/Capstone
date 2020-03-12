@@ -19,7 +19,7 @@ class Navigation {
 		int width;
 		int height;
 		float resolution;
-		geometry_msgs::Pose origin;
+		std::vector<float> origin;
 		int[] map;
 		ros::Subscriber mapSub;
 		int num_view_points;
@@ -35,5 +35,6 @@ class Navigation {
 		void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
 		void getViewPoints(Boxes &boxes);
 		std::vector<int> getTraversalOrder(std::vector<std::vector<float>> coords, int starting_pos);
+		void Navigation::traverseAllBoxes(Boxes &boxes);
 		int getDist(std::vector<float> coor1, std::vector<float> coor2);
 };
