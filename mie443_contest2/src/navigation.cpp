@@ -35,7 +35,6 @@ void Navigation::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     width = msg->info.width;
     height = msg->info.height;
     resolution = msg->info.resolution;
-    origin = msg->info.origin;
     data = msg->data;
     ROS_INFO("Map: (%d, %d) retrieved", width, height);
     // only get map once
@@ -112,18 +111,66 @@ int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
     return pow(pow((coor1[0] - coor2[0]),2) + pow((coor1[1] - coor2[1]),2),1/2);
 }
 
-void Navigation::setupTrajectory(Boxes &boxes, std::vector<float> starting_pos) {
+void Navigation::localizeStartingPose() {
+    ros::spinOnce();
+    std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
+    origin = starting_pos;
+}
+
+void Navigation::traverseAllBoxes(Boxes &boxes) {
+    // set up starting pose
+    localizeStartingPose();
+
     // set up all view points first 
     getViewPoints(boxes.coords);
 
-    // determin box traversal order 
-    std::vector<std::vector<float>> traversal_path = boxes.coords;
-    traversal_path.push_back(starting_pose);
-    std::vector<int> indices = getTraversalOrder(traversal_path, traversal_path.size()-1);
+    // determine box traversal order 
+    std::vector<std::vector<float>> traversal_nodes = boxes.coords;
+    traversal_nodes.push_back(origin);
+    std::vector<int> indices = getTraversalOrder(traversal_nodes, traversal_nodes.size()-1);
 
-    
+    // traverse every box and then return to starting point
+    for (int i = 0; i < indices.size() - 1; i++) {
+        traverseBox(indices[i]);
+    }
+    moveToGoal(origin)
 }
 
 void Navigation::traverseBox(int box_idx) {
+    // traverse the given box from current position 
+    std::map<int,std::vector<std::vector<float>>>::iterator it = box_view_points.find(box_idx); 
+    if(it == box_view_points.end()) {
+        ROS_INFO("Cannot find box with given index...");
+    }
+    else {
+        // get current position 
+        ros::spinOnce();
+        std::vector<float> curr_pos = robotPose.toCoords();
 
+        // determine forward or backward traversal order
+        std::vector<std::vector<float>> view_points = it->second;
+        int start_idx = 0;
+        int end_idx = view_points.size()-1; 
+        int step = 1:
+
+        float dist_first = getDist(curr_pos, view_points[start_idx]);
+        float dist_last = getDist(curr_pos, view_points[end_idx]);
+        if (dist_first > dist_last) {
+            start_idx = view_points.size()-1;
+            end_idx = 0;
+            step = -1;
+        }
+
+        // start traversing 
+        int curr_idx = start_idx;
+        while (curr_idx != end_idx) {
+            std::vector<float> curr_goal = view_points[curr_idx];
+            // move to veiw point 
+            moveToGoal(curr_goal[0], curr_goal[1], curr_goal[2]);
+            // do image stuff 
+            // pass
+            curr_idx += step;
+        } 
+        ROS_INFO("Traversed box %d", box_idx);
+    }
 }

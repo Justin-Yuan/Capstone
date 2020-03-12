@@ -19,9 +19,6 @@ int main(int argc, char **argv)
     // subscribe to map server to grab map (only once)
     Navigation nav(&n, 3);
 
-    // Robot pose object + subscriber.
-    RobotPose robotPose(0, 0, 0);
-    ros::Subscriber amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
     // Initialize box coordinates and templates
     Boxes boxes;
     if (!boxes.load_coords() || !boxes.load_templates())
@@ -39,11 +36,11 @@ int main(int argc, char **argv)
     ImagePipeline imagePipeline(n);
     // Execute strategy.
 
-    while (robotPose.x == 0 && robotPose.y == 0 && robotPose.phi == 0)
-    {
-        ros::spinOnce();
-        std::cout << "Nah" << std::endl;
-    }
+    // while (robotPose.x == 0 && robotPose.y == 0 && robotPose.phi == 0)
+    // {
+    //     ros::spinOnce();
+    //     std::cout << "Nah" << std::endl;
+    // }
 
     /* Params */
     // float boxDistance = 0.75;
@@ -60,7 +57,8 @@ int main(int argc, char **argv)
     while (ros::ok())
     // while (ros::ok() && index < path.size())
     {
-        ros::spinOnce();
+        nav.traverseAllBoxes();
+
         // std::cout << "Robot Position: "
         //           << " x: " << robotPose.x << " y: " << robotPose.y << " z: "
         //           << robotPose.phi << std::endl;
@@ -132,23 +130,6 @@ int main(int argc, char **argv)
     // Navigation::moveToGoal(origin[0], origin[1], origin[2]);
         */
 // 
-        // Our code, reference code is commented above due to not compiling (** please ensure code compiles before adding in reference **):
-        // Get starting pose, append it to the box coordinates, and then find the traversal path.
-        // vector<int> starting_pose = getStartingPose();
-        std::vector<std::vector<float>> traversal_path = boxes.coords;
-        // traversal_path.push_back(starting_pose);
-        // sort traversal path using our navigation functions.
-        
-        int i;
-        for (i = 0; i < traversal_path.size() - 1; i++){
-            nav.moveToGoal(traversal_path[i][0], traversal_path[i][1], traversal_path[i][2]);
-            // run the image detection algorithm (this might include taking the image at 3 different viewpoints)
-            // imagePipeline.getTemplateID(boxes); <= I have no idea how this function works, but it is here as an example.
-            ros::Duration(0.01).sleep();
-        }
-        // Move back to start and end run.
-        nav.moveToGoal(traversal_path[i][0], traversal_path[i][1], traversal_path[i][2]);
-        break;
     }
     return 0;
 }

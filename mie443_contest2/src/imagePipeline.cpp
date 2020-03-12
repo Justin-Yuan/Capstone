@@ -40,42 +40,26 @@ void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
 float computeArea(std::vector<Point2f> scene_corners, cv::Mat img_object)
 {
-    // Might need additional checks
-    if (scene_corners.size() < 4) return 0.0; //
+    if (scene_corners.size() < 4){
+        cout << " scene_corners size not correct, should be 4 "<<endl;
+        return 0.0;
+    }  
     auto points[4] = {};
     for (int i : scene_corners.size()){
         points[i] = scene_corners[i] + Point2f( img_object.cols, 0);
         cout << points[i].x << " "<<points[i].y<<endl;
     }
+    // Get corner points for rectangle
+    auto x_min = fmin(fmin(points[0].x, points[1].x), fmin(points[2].x, points[3].x));
+    auto y_min = fmin(fmin(points[0].y, points[1].y), fmin(points[2].y, points[3].y));
+    auto x_max = fmax(fmax(points[1].x, points[1].x), fmax(points[2].x, points[3].x));
+    auto y_max = fmax(fmax(points[1].y, points[1].y), fmax(points[2].y, points[3].y));
 
-    // auto pointA = scene_corners[0] + Point2f( img_object.cols, 0);
-    // auto pointB = scene_corners[1] + Point2f( img_object.cols, 0);
-    // auto pointC = scene_corners[2] + Point2f( img_object.cols, 0);
-    // auto pointD = scene_corners[3] + Point2f( img_object.cols, 0);
+    float length = abs(x_max - x_min); 
+    float width = abs(y_max - y_min);
+    float area = length * width;
 
-    // cout << pointA.x << " "<<pointA.y<<endl;
-    // cout << pointB.x << " "<<pointB.y<<endl;
-    // cout << pointC.x << " "<<pointC.y<<endl;
-    // cout << pointD.x << " "<<pointD.y<<endl;
-
-    // auto xMin = fmin(fmin(pointA.x, pointB.x), fmin(pointC.x, pointD.x));
-    // auto yMin = fmin(fmin(pointA.y, pointB.y), fmin(pointC.y, pointD.y));
-    // auto xMax = fmax(fmax(pointA.x, pointB.x), fmax(pointC.x, pointD.x));
-    // auto yMax = fmax(fmax(pointA.y, pointB.y), fmax(pointC.y, pointD.y));
-
-
-    auto xMin = fmin(fmin(points[0].x, points[1].x), fmin(points[2].x, points[3].x));
-    auto yMin = fmin(fmin(points[0].y, points[1].y), fmin(points[2].y, points[3].y));
-    auto xMax = fmax(fmax(points[1].x, points[1].x), fmax(points[2].x, points[3].x));
-    auto yMax = fmax(fmax(points[1].y, points[1].y), fmax(points[2].y, points[3].y));
-
-    float s1 = xMax - xMin;
-    float s2 = yMax - yMin;
-
-    float area = s1 * s2;
-
-    //return positive area it ressembles a rectanle, otherwise return negative and equal area
-    // if ((abs(pointA.x - pointD.x) < 50) && (abs(pointB.x - pointC.x) < 50) && (abs(pointA.y - pointB.y) < 50) && (abs(pointC.y - pointD.y) < 50))
+    // check if area is a valid rectangle, return engative value of the area if not valid
     if ((abs(points[0].x - points[3].x) < 50) && (abs(points[1].x - points[2].x) < 50) && (abs(points[0].y - points[1].y) < 50) && (abs(points[2].y - points[3].y) < 50))
         return area;
     else
