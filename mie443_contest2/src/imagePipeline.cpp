@@ -145,7 +145,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes){
                 antiCandidateCount++;
             }
         }
-        AMBIGUITY
+
         switch (candidateCount)
         {
         case 1: // one good match found
@@ -156,7 +156,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes){
         case 3:
             templateID = AMBIGUITY;
             break;
-        default: // certain that all three are blank
+        default: // certain that all three are non-matches
             if (antiCandidateCount == 3) templateID = BLANK;
         }
 
