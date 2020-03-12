@@ -123,7 +123,7 @@ int Navigation::getCurrentBoxId() {
     int box_id = -1;
     float curr_dist = 10000;
 
-    for (int i = 0;, i < boxes.coords.size(); i++) {
+    for (int i = 0; i < boxes.coords.size(); i++) {
         float dist = getDist(curr_pos, boxes.coords[i]);
         if (dist < curr_dist) {
             box_id = i;
