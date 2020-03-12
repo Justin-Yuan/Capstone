@@ -117,7 +117,23 @@ void Navigation::localizeStartingPose() {
     origin = starting_pos;
 }
 
-void Navigation::traverseAllBoxes(Boxes &boxes) {
+int Navigation::getCurrentBoxId() {
+    // get nearest box as current 
+    std::vector<float> curr_pos = robotPose.toCoords();
+    int box_id = -1;
+    float curr_dist = 10000;
+
+    for (int i = 0;, i < boxes.coords.size(); i++) {
+        float dist = getDist(curr_pos, boxes.coords[i]);
+        if (dist < curr_dist) {
+            box_id = i;
+            curr_dist = dist;
+        }
+    }
+    return box_id;
+}
+
+void Navigation::traverseAllBoxes() {
     // set up starting pose
     localizeStartingPose();
 
@@ -143,7 +159,7 @@ void Navigation::traverseBox(int box_idx) {
         ROS_INFO("Cannot find box with given index...");
     }
     else {
-        // get current position 
+        // get current position and current image 
         ros::spinOnce();
         std::vector<float> curr_pos = robotPose.toCoords();
 
@@ -168,9 +184,18 @@ void Navigation::traverseBox(int box_idx) {
             // move to veiw point 
             moveToGoal(curr_goal[0], curr_goal[1], curr_goal[2]);
             // do image stuff 
-            // pass
+            imagePipeline.updateTemplateID(boxes, box_idx);
+            // next view point 
             curr_idx += step;
         } 
         ROS_INFO("Traversed box %d", box_idx);
+    }
+}
+
+
+void logImageIDs() {
+    for (int i = 0; i < boxes.coords.size(); i++) {
+        int img_id = ;
+        ROS_INFO("Image %d is %s at (%f, %f)", );
     }
 }

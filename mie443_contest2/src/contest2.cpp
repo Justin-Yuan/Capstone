@@ -15,9 +15,6 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "contest2");
     ros::NodeHandle n;
 
-    // subscribe to map server to grab map (only once)
-    Navigation nav(&n, 3);
-
     // Initialize box coordinates and templates
     Boxes boxes;
     if (!boxes.load_coords() || !boxes.load_templates())
@@ -31,8 +28,10 @@ int main(int argc, char **argv)
         std::cout << i << " x: " << boxes.coords[i][0] << " y: " << boxes.coords[i][1] << " z: "
                   << boxes.coords[i][2] << std::endl;
     }
-    // Initialize image objectand subscriber.
-    ImagePipeline imagePipeline(n);
+
+    // nav contains subscriber to map_server, amcl and imagePipeline
+    Navigation nav(&n, boxes, 3);
+
     // Execute strategy.
 
     // while (robotPose.x == 0 && robotPose.y == 0 && robotPose.phi == 0)

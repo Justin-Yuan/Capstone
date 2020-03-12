@@ -14,18 +14,29 @@
 #include <imagePipeline.h>
 #include <boxes.h>
 #include <math.h>
+#include <iostream>
 
 
 class Navigation {
 	public:
-		Navigation(ros::NodeHandle &n, int n_view_points) {
+		Boxes boxes;
+
+		Navigation(ros::NodeHandle &n, Boxes &boxes, int n_view_points) {
+			// map stuff
 			mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, this);
 			num_view_points = num_view_points;
 
+			// get boxes handle 
+			boxes = boxes;
+
+			// localization and image stuff
 			amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
+			imagePipeline = ImagePipeline imagePipeline(n);
 		}
 
 		void traverseAllBoxes(Boxes &boxes);
+		int getCurrentBoxId();
+		void logImageIDs();
 
 	private:
 		int width;
@@ -33,11 +44,14 @@ class Navigation {
 		float resolution;
 		std::vector<float> origin;
 		int[] map;
+
 		RobotPose robotPose(0, 0, 0);
 		ros::Subscriber mapSub, amclSub;
+		ImagePipeline imagePipeline;
+
 		int num_view_points;
 		std::map<int,std::vector<std::vector<float>>> box_view_points;
-		std::vector<std::vector<float>> traj_points;
+
 		
     
 		static bool moveToGoal(float xGoal, float yGoal, float phiGoal);
