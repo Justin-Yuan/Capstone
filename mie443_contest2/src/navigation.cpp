@@ -121,3 +121,17 @@ std::vector<std::vector<float>> Navigation::getTraversalOrder(std::vector<std::v
 int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
     return pow(pow((coor1[0] - coor2[0]),2) + pow((coor1[1] - coor2[1]),2),1/2);
 }
+
+void Navigation::getTrajectory(Boxes &boxes,  int starting_pos) {
+    // set up all view points first 
+    getViewPoints(&boxes);
+    // determin box traversal order 
+    std::vector<int> indices = getTraversalOrder(&boxes, starting_pos);
+    // combine box view points according to traversal order to form trajectory
+    for (auto i : indices) {
+        for () {
+
+            traj_points.push_back();
+        }
+    }
+}

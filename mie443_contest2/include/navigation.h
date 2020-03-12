@@ -16,7 +16,8 @@ class Navigation {
 		int8[] map;
 		ros::Subscriber mapSub;
 		int n_view_points;
-		std::map<int,std::vector<std::vector<float>>> view_points;
+		std::map<int,std::vector<std::vector<float>>> box_view_points;
+		std::vector<std::vector<float>> traj_points;
 
 		Navigation(ros::NodeHandle &n, int n_view_points) {
 			mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, this);
