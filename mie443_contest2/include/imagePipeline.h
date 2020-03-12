@@ -12,10 +12,22 @@ class ImagePipeline {
         cv::Mat img;
         bool isValid;
         image_transport::Subscriber sub;
+        vector<int> templateIDs(5, -1);
+
     public:
         ImagePipeline(ros::NodeHandle& n);
         void imageCallback(const sensor_msgs::ImageConstPtr& msg);
         int getTemplateID(Boxes& boxes);
         float getArea(std::vector<Point2f> scene_corners, cv::Mat img_object);
         float performSURF(cv::Mat img_scene, cv::Mat img_object);
+        void ImagePipeline::updateTemplateID(Boxes &boxes, int boxID);
+
+        void set_templateID(int templateID, int boxID)
+        {
+            templateIDs[boxID] = templateID;
+        }
+
+        int get_templateID(){
+            return templateIDs(5, -1);
+        }
 };

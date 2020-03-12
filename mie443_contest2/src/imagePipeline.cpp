@@ -19,13 +19,17 @@ ImagePipeline::ImagePipeline(ros::NodeHandle &n)
     isValid = false;
 }
 
+void ImagePipeline::updateTemplateID(Boxes &boxes, int boxID)
+{
+    set_templateID(getTemplateID(Boxes & boxes), boxID);
+}
+
 int ImagePipeline::getTemplateID(Boxes &boxes)
 {
     int templateID = AMBIGUITY;
-
-    cv::Mat target_1 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template1.jpg", IMREAD_GRAYSCALE);
-    cv::Mat target_2 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template2.jpg", IMREAD_GRAYSCALE);
-    cv::Mat target_3 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template3.jpg", IMREAD_GRAYSCALE);
+    // cv::Mat target_1 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template1.jpg", IMREAD_GRAYSCALE);
+    // cv::Mat target_2 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template2.jpg", IMREAD_GRAYSCALE);
+    // cv::Mat target_3 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template3.jpg", IMREAD_GRAYSCALE);
 
     if (!isValid)
     {
@@ -90,6 +94,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
         cv::imshow("view", img);
         cv::waitKey(10);
     }
+
     return templateID;
 }
 
