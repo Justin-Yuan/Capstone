@@ -45,7 +45,7 @@ class Navigation {
 		int height;
 		float resolution;
 		std::vector<float> origin;
-		int[] map;
+		// int[] map;
 
 		RobotPose robotPose;
 		ros::Subscriber mapSub, amclSub;

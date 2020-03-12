@@ -37,7 +37,8 @@ void Navigation::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     resolution = msg->info.resolution;
     ROS_INFO("Map: (%d, %d) retrieved", width, height);
     // only get map once
-    mapSub.unregister();
+    // mapSub.unregister();
+    mapSub.shutdown();
 }
 
 void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
