@@ -25,7 +25,7 @@ class Navigation {
 			amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
 		}
 
-		void Navigation::traverseAllBoxes(Boxes &boxes);
+		void traverseAllBoxes(Boxes &boxes);
 
 	private:
 		int width;
@@ -44,7 +44,8 @@ class Navigation {
 		void mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg);
 		void getViewPoints(Boxes &boxes);
 		std::vector<int> getTraversalOrder(std::vector<std::vector<float>> coords, int starting_pos);
-		oid Navigation::localizeStartingPose()
+		void localizeStartingPose();
 		int getDist(std::vector<float> coor1, std::vector<float> coor2);
+		void traverseBox(int box_idx);
 
 };

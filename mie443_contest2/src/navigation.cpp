@@ -136,15 +136,19 @@ void Navigation::traverseAllBoxes(Boxes &boxes) {
     moveToGoal(origin)
 }
 
-void Navigation::traverseBox(std::vector<float> curr_pos, int box_idx) {
+void Navigation::traverseBox(int box_idx) {
     // traverse the given box from current position 
     std::map<int,std::vector<std::vector<float>>>::iterator it = box_view_points.find(box_idx); 
     if(it == box_view_points.end()) {
         ROS_INFO("Cannot find box with given index...");
     }
     else {
-        std::vector<std::vector<float>> view_points = it->second;
+        // get current position 
+        ros::spinOnce();
+        std::vector<float> curr_pos = robotPose.toCoords();
+
         // determine forward or backward traversal order
+        std::vector<std::vector<float>> view_points = it->second;
         int start_idx = 0;
         int end_idx = view_points.size()-1; 
         int step = 1:
