@@ -111,7 +111,16 @@ int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
     return pow(pow((coor1[0] - coor2[0]),2) + pow((coor1[1] - coor2[1]),2),1/2);
 }
 
+void Navigation::localizeStartingPose() {
+    ros::spinOnce();
+    std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
+    origin = starting_pos;
+}
+
 void Navigation::traverseAllBoxes(Boxes &boxes) {
+    // set up starting pose
+    localizeStartingPose();
+
     // set up all view points first 
     getViewPoints(boxes.coords);
 
