@@ -19,54 +19,8 @@ ImagePipeline::ImagePipeline(ros::NodeHandle &n)
     isValid = false;
 }
 
-void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr &msg)
+int ImagePipeline::getTemplateID(Boxes &boxes)
 {
-    try
-    {
-        if (isValid)
-        {
-            img.release();
-        }
-        img = (cv_bridge::toCvShare(msg, IMAGE_TYPE)->image).clone();
-        isValid = true;
-    }
-    catch (cv_bridge::Exception &e)
-    {
-        std::cout << "ERROR: Could not convert from " << msg->encoding.c_str()
-                  << " to " << IMAGE_TYPE.c_str() << "!" << std::endl;
-        isValid = false;
-    }
-}
-
-float computeArea(std::vector<Point2f> scene_corners, cv::Mat img_object)
-{
-    if (scene_corners.size() < 4){
-        cout << " scene_corners size not correct, should be 4 "<<endl;
-        return 0.0;
-    }  
-    auto points[4] = {};
-    for (int i : scene_corners.size()){
-        points[i] = scene_corners[i] + Point2f( img_object.cols, 0);
-        cout << points[i].x << " "<<points[i].y<<endl;
-    }
-    // Get corner points for rectangle
-    auto x_min = fmin(fmin(points[0].x, points[1].x), fmin(points[2].x, points[3].x));
-    auto y_min = fmin(fmin(points[0].y, points[1].y), fmin(points[2].y, points[3].y));
-    auto x_max = fmax(fmax(points[1].x, points[1].x), fmax(points[2].x, points[3].x));
-    auto y_max = fmax(fmax(points[1].y, points[1].y), fmax(points[2].y, points[3].y));
-
-    float length = abs(x_max - x_min); 
-    float width = abs(y_max - y_min);
-    float area = length * width;
-
-    // check if area is a valid rectangle, return engative value of the area if not valid
-    if ((abs(points[0].x - points[3].x) < 50) && (abs(points[1].x - points[2].x) < 50) && (abs(points[0].y - points[1].y) < 50) && (abs(points[2].y - points[3].y) < 50))
-        return area;
-    else
-        return -1 * area;
-}
-
-int ImagePipeline::getTemplateID(Boxes &boxes){
     int templateID = AMBIGUITY;
 
     cv::Mat target_1 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template1.jpg", IMREAD_GRAYSCALE);
@@ -139,7 +93,8 @@ int ImagePipeline::getTemplateID(Boxes &boxes){
             templateID = AMBIGUITY;
             break;
         default: // certain that all three are non-matches
-            if (antiCandidateCount == 3) templateID = BLANK;
+            if (antiCandidateCount == 3)
+                templateID = BLANK;
         }
 
         // Use: boxes.templates
@@ -149,7 +104,54 @@ int ImagePipeline::getTemplateID(Boxes &boxes){
     return templateID;
 }
 
-float performSURF(cv::Mat img_scene, cv::Mat img_object)
+void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr &msg)
+{
+    try
+    {
+        if (isValid)
+        {
+            img.release();
+        }
+        img = (cv_bridge::toCvShare(msg, IMAGE_TYPE)->image).clone();
+        isValid = true;
+    }
+    catch (cv_bridge::Exception &e)
+    {
+        std::cout << "ERROR: Could not convert from " << msg->encoding.c_str()
+                  << " to " << IMAGE_TYPE.c_str() << "!" << std::endl;
+        isValid = false;
+    }
+}
+
+float ImagePipeline::getArea(std::vector<Point2f> scene_corners, cv::Mat img_object)
+{
+    if (scene_corners.size() < 4){
+        cout << " scene_corners size not correct, should be 4 "<<endl;
+        return 0.0;
+    }  
+    auto points[4] = {};
+    for (int i : scene_corners.size()){
+        points[i] = scene_corners[i] + Point2f( img_object.cols, 0);
+        cout << points[i].x << " "<<points[i].y<<endl;
+    }
+    // Get corner points for rectangle
+    auto x_min = fmin(fmin(points[0].x, points[1].x), fmin(points[2].x, points[3].x));
+    auto y_min = fmin(fmin(points[0].y, points[1].y), fmin(points[2].y, points[3].y));
+    auto x_max = fmax(fmax(points[1].x, points[1].x), fmax(points[2].x, points[3].x));
+    auto y_max = fmax(fmax(points[1].y, points[1].y), fmax(points[2].y, points[3].y));
+
+    float length = abs(x_max - x_min); 
+    float width = abs(y_max - y_min);
+    float area = length * width;
+
+    // check if area is a valid rectangle, return engative value of the area if not valid
+    if ((abs(points[0].x - points[3].x) < 50) && (abs(points[1].x - points[2].x) < 50) && (abs(points[0].y - points[1].y) < 50) && (abs(points[2].y - points[3].y) < 50))
+        return area;
+    else
+        return -1 * area;
+}
+
+float ImagePipeline::performSURF(cv::Mat img_scene, cv::Mat img_object)
 {
     //-- Step 1 & 2: Detect the keypoints and calculate descriptors using SURF Detector
     int minHessian = 400;
@@ -233,7 +235,7 @@ float performSURF(cv::Mat img_scene, cv::Mat img_object)
     line(img_matches, scene_corners[2] + Point2f(img_object.cols, 0), scene_corners[3] + Point2f(img_object.cols, 0), Scalar(0, 255, 0), 4);
     line(img_matches, scene_corners[3] + Point2f(img_object.cols, 0), scene_corners[0] + Point2f(img_object.cols, 0), Scalar(0, 255, 0), 4);
 
-    area = computeArea(scene_corners, img_object);
+    area = getArea(scene_corners, img_object);
 
     //-- Show detected matches
     imshow("Good Matches & Object detection", img_matches);

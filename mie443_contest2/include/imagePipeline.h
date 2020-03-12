@@ -16,4 +16,6 @@ class ImagePipeline {
         ImagePipeline(ros::NodeHandle& n);
         void imageCallback(const sensor_msgs::ImageConstPtr& msg);
         int getTemplateID(Boxes& boxes);
+        float getArea(std::vector<Point2f> scene_corners, cv::Mat img_object);
+        float performSURF(cv::Mat img_scene, cv::Mat img_object);
 };
