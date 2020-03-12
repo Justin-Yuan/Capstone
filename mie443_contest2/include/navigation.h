@@ -33,8 +33,8 @@ class Navigation {
 			boxes = boxes;
 
 			// localization and image stuff
-			// amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
-			imagePipeline = ImagePipeline imagePipeline(n);
+			amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
+			imagePipeline = ImagePipeline(n);
 		}
 
 		void traverseAllBoxes();
@@ -46,7 +46,7 @@ class Navigation {
 		int height;
 		float resolution;
 		std::vector<float> origin;
-		// int[] map;
+		int[] map;
 
 		RobotPose robotPose(0, 0, 0);
 		ros::Subscriber mapSub, amclSub;
