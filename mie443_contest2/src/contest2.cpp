@@ -3,10 +3,11 @@
 #include <robot_pose.h>
 #include <imagePipeline.h>
 
-
+// Matching status
 #define RAISIN 0
 #define CINNAMON 1
 #define RICE 2
+#define AMBIGUITY -1
 #define BLANK -2
 
 int main(int argc, char **argv)
