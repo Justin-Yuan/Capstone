@@ -45,18 +45,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
         vector<float> matchedAreas(NumTargets, 0.0);
         for (int i = 0; i < NumTargets; i++)
         {
-            switch (i)
-            {
-            case 0:
-                target = target_0;
-                break;
-            case 1:
-                target = target_1;
-                break;
-            case 2:
-                target = target_2;
-                break;
-            }
+            cv::Mat target = boxes.templates[i];
             matchedAreas[i] = performSURF(img, target);
             cout << "Target " << i << " | area = " << matchedAreas[i] << endl;
         }
