@@ -7,37 +7,25 @@ using namespace cv;
 using namespace std;
 using namespace cv::xfeatures2d;
 
-ImagePipeline::ImagePipeline(ros::NodeHandle &n)
+void ImagePipeline::updateLogits(Boxes &boxes, int boxID)
 {
-    image_transport::ImageTransport it(n);
-    sub = it.subscribe(IMAGE_TOPIC, 1, &ImagePipeline::imageCallback, this);
-    // reset all image template ids
-    for (int box = 0; box < templateIDs.size(); box++)
-    {
-        templateIDs[box] = -1;
-    }
-    isValid = false;
+    // int iMatch = getTemplateID(boxes) + 2; // note that getTemplateID returns -2 to 2
+    // for (int i = 0; i < NumStatus; i++)
+    // {
+    //     int change = (i == iMatch) ? (alpha) : (beta);
+    //     logits[boxID][i] += change;
+    // }
 }
-
-// void ImagePipeline::updateLogits(Boxes &boxes, int boxID)
-// {
-//     int iMatch = getTemplateID(Boxes & boxes) + 2; // note that getTemplateID returns -2 to 2
-//     for (int i = 0; i < NumStatus; i++)
-//     {
-//         change = (i == iMatch) ? (alpha) : (beta);
-//         logits[boxID][i] += change;
-//     }
-// }
 
 // inline void ImagePipeline::finalizeTemplateID(int boxID)
 // {
-//     vector<float> currLogits = logits[boxID];
+//     // vector<float> currLogits = logits[boxID];
 
-//     // bestIndex = best of softmax or simply the max
-//     float maxLogit = std::max_element(std::begin(currLogits), std::end(currLogits));
-//     int bestIndex = std::distance(std::begin(currLogits), maxLogit);
+//     // // bestIndex = best of softmax or simply the max
+//     // float maxLogit = std::max_element(std::begin(currLogits), std::end(currLogits));
+//     // int bestIndex = std::distance(std::begin(currLogits), maxLogit);
 
-//     set_templateID(bestIndex - 2, boxID); // note that getTemplateID returns -2 to 2, index is however 0 to 4
+//     // setTemplateID(bestIndex - 2, boxID); // note that getTemplateID returns -2 to 2, index is however 0 to 4
 // }
 
 // inline int ImagePipeline::finalizeTemplateIDs(int boxID)

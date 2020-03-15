@@ -95,18 +95,16 @@ x11vnc -ncache 10
 ```
 port is 5900
 
+### Version 2
+run contest 2 code
+```bash
+# load map and bot 
+roslaunch mie443_contest2 turtlebot_world.launch world:=1
 
-## TODO LIST
-- [x] Basic Algorithm for the robot to run in simulation. E.G. Wall Following
-- [x] Reference code. Transfer util functions to what we need: 
-    rotate
-    correction
-    laser callback
-    odometry callback
-    mode1 / mode2
-    general exploration algrithm
-- [x] Move Reference code to our planner structure:
-	Note: publishVelocity now does not spinOnce by default
-	Note: random generator now initialized locally - need to check if seeding is affected
-- [] Bumper wrap up
-- [] Report - graphs, obstacle avoidance, fill in details
+# run acml, replace map_file location with your own location 
+roslaunch turtlebot_gazebo amcl_demo.launch map_file:=/home/yt1234gary/catkin_ws_mie/src/Capstone/mie443_contest2/maps/map_1.yaml
+ 
+# control logic 
+rosrun mie443_contest2 contest2
+
+```

@@ -37,8 +37,8 @@ using namespace cv::xfeatures2d;
 // #define NumViewPoints 5
 
 // Logit update
-#define alpha = 2.
-#define beta = 1.5
+#define alpha 2.
+#define beta 1.5
 
 // class ImagePipeline {
 //     private:
@@ -76,11 +76,10 @@ private:
     cv::Mat img;
     bool isValid;
     image_transport::Subscriber sub;
-    vector<int> templateIDs(NumBoxes, -1);                           // stores final IDs
-    vector<vector<float>> logits(NumBoxes, vector<int>(NumStatus, 0)); // 1st index: boxID, 2nd index-2: target
+    vector<int> templateIDs;                           // stores final IDs
+    vector<vector<float>> logits; // 1st index: boxID, 2nd index-2: target
 
 public:
-    ImagePipeline(ros::NodeHandle &n);
     void imageCallback(const sensor_msgs::ImageConstPtr &msg);
     int getTemplateID(Boxes &boxes);
     float getArea(std::vector<Point2f> scene_corners, cv::Mat img_object);
@@ -90,8 +89,23 @@ public:
     void updateLogits(Boxes &boxes, int boxID);
 
     // To be called at the end
-    void finalizeTemplateID(int boxID); // updates this.templateIDs from this.logits
-    void finalizeTemplateIDs();         // wrapper for the finalizeTemplateID
+    // void finalizeTemplateID(int boxID); // updates this.templateIDs from this.logits
+    // void finalizeTemplateIDs();         // wrapper for the finalizeTemplateID
+
+    // Constructor
+    ImagePipeline(ros::NodeHandle &n) : templateIDs(NumBoxes, -1)
+    // logits(NumBoxes, vector<int>(NumStatus, 0))
+    {
+        image_transport::ImageTransport it(n);
+        sub = it.subscribe(IMAGE_TOPIC, 1, &ImagePipeline::imageCallback, this);
+        // reset all image template ids
+        for (int box = 0; box < templateIDs.size(); box++)
+        {
+            templateIDs[box] = -1;
+        }
+        isValid = false;
+    }
+
 
     // Utilities
     inline void setTemplateID(int templateID, int boxID)

@@ -69,6 +69,7 @@ void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
         ));
         i++;
     }
+    ROS_INFO("Finished obtaining view points");
 }
 
 
@@ -101,6 +102,7 @@ std::vector<int> Navigation::getTraversalOrder(std::vector<std::vector<float>> c
         }
         
     } while (next_permutation(vertex.begin(), vertex.end())); 
+    ROS_INFO("Finished obtaining traversal order");
     
     // Append starting coord to end of vector.
     vertex.push_back(starting_pos);
@@ -115,6 +117,7 @@ void Navigation::localizeStartingPose() {
     ros::spinOnce();
     std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
     origin = starting_pos;
+    ROS_INFO("Finished obtaining starting pose");
 }
 
 int Navigation::getCurrentBoxId() {
@@ -184,11 +187,12 @@ void Navigation::traverseBox(int box_idx) {
         int curr_idx = start_idx;
         while (curr_idx != end_idx) {
             std::vector<float> curr_goal = view_points[curr_idx];
+            ROS_INFO("Moving to point: %f, %f, %f", curr_goal[0], curr_goal[1], curr_goal[2]);
             // move to veiw point 
             moveToGoal(curr_goal[0], curr_goal[1], curr_goal[2]);
             // do image stuff 
             // imagePipeline.updateLogits(boxes, box_idx);
-            imagePipeline.getTemplateID(boxes);
+            // imagePipeline.getTemplateID(boxes);
             // next view point 
             curr_idx += step;
         } 

@@ -1,7 +1,6 @@
 #include <boxes.h>
 #include <navigation.h>
 #include <robot_pose.h>
-#include <imagePipeline.h>
 
 // Matching status
 #define RAISIN 0
@@ -31,11 +30,13 @@ int main(int argc, char **argv)
     }
 
     // nav contains subscriber to map_server, amcl and imagePipeline
+    std::cout << "Loading navigation: " << std::endl;
     Navigation nav(n, boxes, 3);
 
     // Execute strategy.
     while (ros::ok())
     {
+        std::cout << "Beginning navigation: " << std::endl;
         nav.traverseAllBoxes();
     }
     return 0;
