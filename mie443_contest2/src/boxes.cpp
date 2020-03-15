@@ -8,7 +8,7 @@ bool Boxes::load_coords() {
     if(fs.isOpened()) {
         cv::FileNode node;
         cv::FileNodeIterator it, end;
-        std::vector<float> coordVec;
+        std::vector<float> coordVec
         std::string coords_xml[5] = {"coordinate1", "coordinate2", "coordinate3", "coordinate4",
                                      "coordinate5"};
         for(int i = 0; i < 5; ++i) {
