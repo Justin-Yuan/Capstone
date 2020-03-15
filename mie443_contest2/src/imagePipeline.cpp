@@ -19,35 +19,35 @@ ImagePipeline::ImagePipeline(ros::NodeHandle &n)
     isValid = false;
 }
 
-void ImagePipeline::updateLogits(Boxes &boxes, int boxID)
-{
-    int iMatch = getTemplateID(Boxes & boxes) + 2; // note that getTemplateID returns -2 to 2
-    for (int i = 0; i < NumStatus; i++)
-    {
-        change = (i == iMatch) ? (alpha) : (beta);
-        logits[boxID][i] += change;
-    }
-}
+// void ImagePipeline::updateLogits(Boxes &boxes, int boxID)
+// {
+//     int iMatch = getTemplateID(Boxes & boxes) + 2; // note that getTemplateID returns -2 to 2
+//     for (int i = 0; i < NumStatus; i++)
+//     {
+//         change = (i == iMatch) ? (alpha) : (beta);
+//         logits[boxID][i] += change;
+//     }
+// }
 
-inline void ImagePipeline::finalizeTemplateID(int boxID)
-{
-    vector<float> currLogits = logits[boxID];
+// inline void ImagePipeline::finalizeTemplateID(int boxID)
+// {
+//     vector<float> currLogits = logits[boxID];
 
-    // bestIndex = best of softmax or simply the max
-    float maxLogit = std::max_element(std::begin(currLogits), std::end(currLogits));
-    int bestIndex = std::distance(std::begin(currLogits), maxLogit);
+//     // bestIndex = best of softmax or simply the max
+//     float maxLogit = std::max_element(std::begin(currLogits), std::end(currLogits));
+//     int bestIndex = std::distance(std::begin(currLogits), maxLogit);
 
-    set_templateID(bestIndex - 2, boxID); // note that getTemplateID returns -2 to 2, index is however 0 to 4
-}
+//     set_templateID(bestIndex - 2, boxID); // note that getTemplateID returns -2 to 2, index is however 0 to 4
+// }
 
-inline int ImagePipeline::finalizeTemplateIDs(int boxID)
-{
-    // finalize the templateIDs vector once and for all
-    for (int box = 0; i < NumBoxes; box++)
-    {
-        finalizeTemplateID(box);
-    }
-}
+// inline int ImagePipeline::finalizeTemplateIDs(int boxID)
+// {
+//     // finalize the templateIDs vector once and for all
+//     for (int box = 0; i < NumBoxes; box++)
+//     {
+//         finalizeTemplateID(box);
+//     }
+// }
 
 int ImagePipeline::getTemplateID(Boxes &boxes)
 {

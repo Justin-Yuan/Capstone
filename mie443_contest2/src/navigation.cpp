@@ -187,7 +187,8 @@ void Navigation::traverseBox(int box_idx) {
             // move to veiw point 
             moveToGoal(curr_goal[0], curr_goal[1], curr_goal[2]);
             // do image stuff 
-            imagePipeline.updateLogits(boxes, box_idx);
+            // imagePipeline.updateLogits(boxes, box_idx);
+            imagePipeline.getTemplateID(boxes);
             // next view point 
             curr_idx += step;
         } 
