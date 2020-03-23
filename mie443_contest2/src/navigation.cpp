@@ -175,6 +175,10 @@ void Navigation::traverseBox(int box_idx) {
         int end_idx = view_points.size()-1; 
         int step = 1;
 
+        // REMOVE AFTER DEBUGGING VIEWPOINT GENERATION
+        // view_points[start_idx] = view_points[start_idx + 1];
+        // view_points[end_idx] = view_points[start_idx + 1];
+
         float dist_first = getDist(curr_pos, view_points[start_idx]);
         float dist_last = getDist(curr_pos, view_points[end_idx]);
         if (dist_first > dist_last) {
@@ -187,7 +191,7 @@ void Navigation::traverseBox(int box_idx) {
         int curr_idx = start_idx;
         while (curr_idx != end_idx) {
             std::vector<float> curr_goal = view_points[curr_idx];
-            ROS_INFO("Moving to point: %f, %f, %f", curr_goal[0], curr_goal[1], curr_goal[2]);
+            ROS_INFO("Moving to box %d point %d from %d to %d: %f, %f, %f", box_idx, curr_idx, start_idx, end_idx, curr_goal[0], curr_goal[1], curr_goal[2]);
             // move to veiw point 
             moveToGoal(curr_goal[0], curr_goal[1], curr_goal[2]);
             // do image stuff 
