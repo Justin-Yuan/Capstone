@@ -115,7 +115,7 @@ int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
 
 void Navigation::localizeStartingPose() {
     ros::spinOnce();
-    
+
     std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
     origin = starting_pos;
     ROS_INFO("Finished obtaining starting pose: %f, %f, %f", robotPose.x, robotPose.y, robotPose.phi);
@@ -190,15 +190,12 @@ void Navigation::traverseBox(int box_idx) {
         while (curr_idx != end_idx) {
             std::vector<float> curr_goal = view_points[curr_idx];
 
-            // REMOVE AFTER DEBUGGING
-            // curr_goal = boxes.coords[curr_idx];
-
             ROS_INFO("Moving to box %d point %d from %d to %d: %f, %f, %f", box_idx, curr_idx, start_idx, end_idx, curr_goal[0], curr_goal[1], curr_goal[2]);
             // move to veiw point 
             moveToGoal(curr_goal[0], curr_goal[1], curr_goal[2]);
             // do image stuff 
-            // imagePipeline.updateLogits(boxes, box_idx);
-            // imagePipeline.getTemplateID(boxes);
+            imagePipeline.updateLogits(boxes, box_idx);
+            imagePipeline.getTemplateID(boxes);
             // next view point 
             curr_idx += step;
         } 

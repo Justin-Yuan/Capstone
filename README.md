@@ -104,7 +104,20 @@ roslaunch mie443_contest2 turtlebot_world.launch world:=1
 # run acml, replace map_file location with your own location 
 roslaunch turtlebot_gazebo amcl_demo.launch map_file:=/home/yt1234gary/catkin_ws_mie/src/Capstone/mie443_contest2/boxes_database/maps/map_1.yaml
  
+# run rviz to check if correct map is loaded for acml
+roslaunch turtlebot_rviz_launchers view_navigation.launch
+
 # control logic 
 rosrun mie443_contest2 contest2
 
+# optional after running above commands, may reset costmap if there are errors:
+rosservice call /move_base/clear_costmaps
+
 ```
+
+things to do:
+0) figure out if we need to localize robot if the starting location is not 0, 0, 0
+1) check if image recognition parts are working (most likely there are problems)
+2) check if viewpoints are being generated correctly (they might be generated backwards)
+3) check if there are ways to unstuck the robot during move to goal better (possibly tied to incorrect viewpoint generation/unsuccessful starting localization)
+4) ensure whole pipeline runs properly
