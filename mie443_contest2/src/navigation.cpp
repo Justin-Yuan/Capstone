@@ -37,7 +37,6 @@ void Navigation::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
     resolution = msg->info.resolution;
     ROS_INFO("Map: (%d, %d) retrieved", width, height);
     // only get map once
-    // mapSub.unregister();
     mapSub.shutdown();
 }
 
@@ -114,8 +113,8 @@ int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
 }
 
 void Navigation::localizeStartingPose() {
+    // localize the starting position
     ros::spinOnce();
-
     std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
     origin = starting_pos;
     ROS_INFO("Finished obtaining starting pose: %f, %f, %f", robotPose.x, robotPose.y, robotPose.phi);
@@ -194,8 +193,9 @@ void Navigation::traverseBox(int box_idx) {
             // move to veiw point 
             moveToGoal(curr_goal[0], curr_goal[1], curr_goal[2]);
             // do image stuff 
+            ros::spinOnce();
             imagePipeline.updateLogits(boxes, box_idx);
-            imagePipeline.getTemplateID(boxes);
+            imagePipeline.finalizeTemplateID(box_idx);
             // next view point 
             curr_idx += step;
         } 
