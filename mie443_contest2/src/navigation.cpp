@@ -53,8 +53,8 @@ void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
         
         // generate view points
         float ang_delta = M_PI / (num_view_points + 1);
-        for (int i = 0; i < num_view_points; i++) {
-            float view_ang = angle - M_PI/2.0 + (i+1)*ang_delta;
+        for (int v = 0; v < num_view_points; v++) {
+            float view_ang = angle - M_PI/2.0 + (v+1)*ang_delta;
             float view_x = x + margin * cos(view_ang);
             float view_y = y + margin * sin(view_ang);
 
