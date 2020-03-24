@@ -54,7 +54,7 @@ void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
         // offset center of view points
         float r = sqrt(x*x + y*y) + box_size;
         x = r * cos(angle);
-        y = r * sin(angle;)
+        y = r * sin(angle);
         
         // generate view points
         float ang_delta = M_PI / (num_view_points + 1);
