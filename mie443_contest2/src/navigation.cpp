@@ -115,6 +115,7 @@ int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
 
 void Navigation::localizeStartingPose() {
     ros::spinOnce();
+    
     std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
     origin = starting_pos;
     ROS_INFO("Finished obtaining starting pose: %f, %f, %f", robotPose.x, robotPose.y, robotPose.phi);

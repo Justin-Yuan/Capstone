@@ -102,7 +102,7 @@ run contest 2 code
 roslaunch mie443_contest2 turtlebot_world.launch world:=1
 
 # run acml, replace map_file location with your own location 
-roslaunch turtlebot_gazebo amcl_demo.launch map_file:=/home/yt1234gary/catkin_ws_mie/src/Capstone/mie443_contest2/maps/map_1.yaml
+roslaunch turtlebot_gazebo amcl_demo.launch map_file:=/home/yt1234gary/catkin_ws_mie/src/Capstone/mie443_contest2/boxes_database/maps/map_1.yaml
  
 # control logic 
 rosrun mie443_contest2 contest2
