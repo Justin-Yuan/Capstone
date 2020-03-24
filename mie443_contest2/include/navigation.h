@@ -27,7 +27,7 @@ class Navigation {
 		Navigation(ros::NodeHandle &n, Boxes &_boxes, int n_view_points) : robotPose(0, 0, 0), imagePipeline(n){
 			// map stuff
 			mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, this);
-			num_view_points = num_view_points;
+			num_view_points = n_view_points;
 
 			// get boxes handle 
 			boxes = _boxes;

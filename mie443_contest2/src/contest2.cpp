@@ -34,10 +34,10 @@ int main(int argc, char **argv)
     Navigation nav(n, boxes, 3);
 
     // Execute strategy.
-    while (ros::ok())
-    {
+    // while (ros::ok())
+    // {
         std::cout << "Beginning navigation: " << std::endl;
         nav.traverseAllBoxes();
-    }
+    // }
     return 0;
 }
