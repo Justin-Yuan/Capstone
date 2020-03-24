@@ -89,8 +89,8 @@ public:
     void updateLogits(Boxes &boxes, int boxID);
 
     // To be called at the end
-    // void finalizeTemplateID(int boxID); // updates this.templateIDs from this.logits
-    // void finalizeTemplateIDs();         // wrapper for the finalizeTemplateID
+    void finalizeTemplateID(int boxID); // updates this.templateIDs from this.logits
+    void finalizeTemplateIDs();         // wrapper for the finalizeTemplateID
 
     // Constructor
     ImagePipeline(ros::NodeHandle &n) : templateIDs(NumBoxes, -1)

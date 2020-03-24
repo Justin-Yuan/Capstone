@@ -9,40 +9,46 @@ using namespace cv::xfeatures2d;
 
 void ImagePipeline::updateLogits(Boxes &boxes, int boxID)
 {
-    // int iMatch = getTemplateID(boxes) + 2; // note that getTemplateID returns -2 to 2
-    // for (int i = 0; i < NumStatus; i++)
-    // {
-    //     int change = (i == iMatch) ? (alpha) : (beta);
-    //     logits[boxID][i] += change;
-    // }
+    int iMatch = getTemplateID(boxes) + 2; // note that getTemplateID returns -2 to 2
+    for (int i = 0; i < NumStatus; i++)
+    {
+        int change = (i == iMatch) ? (alpha) : (beta);
+        logits[boxID][i] += change;
+    }
 }
 
-// inline void ImagePipeline::finalizeTemplateID(int boxID)
-// {
-//     // vector<float> currLogits = logits[boxID];
+void ImagePipeline::finalizeTemplateID(int boxID)
+{
+    vector<float> currLogits = logits[boxID];
 
-//     // // bestIndex = best of softmax or simply the max
-//     // float maxLogit = std::max_element(std::begin(currLogits), std::end(currLogits));
-//     // int bestIndex = std::distance(std::begin(currLogits), maxLogit);
+    // bestIndex = best of softmax or simply the max
+    float maxLogit = 0;
+    int bestIndex = 0;
+    for (int i = 0; i < currLogits.size(); i++) {
+        if (currLogits[i] > maxLogit) {
+            maxLogit = currLogits[i];
+            bestIndex = i;
+        }
+    }
 
-//     // setTemplateID(bestIndex - 2, boxID); // note that getTemplateID returns -2 to 2, index is however 0 to 4
-// }
+    setTemplateID(bestIndex - 2, boxID); // note that getTemplateID returns -2 to 2, index is however 0 to 4
+}
 
-// inline int ImagePipeline::finalizeTemplateIDs(int boxID)
-// {
-//     // finalize the templateIDs vector once and for all
-//     for (int box = 0; i < NumBoxes; box++)
-//     {
-//         finalizeTemplateID(box);
-//     }
-// }
+void ImagePipeline::finalizeTemplateIDs()
+{
+    // finalize the templateIDs vector once and for all
+    for (int box = 0; box < NumBoxes; box++)
+    {
+        finalizeTemplateID(box);
+    }
+}
 
 int ImagePipeline::getTemplateID(Boxes &boxes)
 {
     int templateID = AMBIGUITY;
-    // cv::Mat target_1 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template1.jpg", IMREAD_GRAYSCALE);
-    // cv::Mat target_2 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template2.jpg", IMREAD_GRAYSCALE);
-    // cv::Mat target_3 = imread("/home/turtlebot/catkin_ws/src/mie443_contest2/boxes_database/template3.jpg", IMREAD_GRAYSCALE);
+    cv::Mat target_1 = imread("/home/yt1234gary/catkin_ws_mie/src/Capstone/mie443_contest2/boxes_database/template1.jpg", IMREAD_GRAYSCALE);
+    cv::Mat target_2 = imread("/home/yt1234gary/catkin_ws_mie/src/Capstone/mie443_contest2/boxes_database/template2.jpg", IMREAD_GRAYSCALE);
+    cv::Mat target_3 = imread("/home/yt1234gary/catkin_ws_mie/src/Capstone/mie443_contest2/boxes_database/template3.jpg", IMREAD_GRAYSCALE);
 
     if (!isValid)
     {
