@@ -74,6 +74,11 @@ public:
             templateIDs[box] = -1;
         }
         isValid = false;
+
+        for (int i = 0; i < NumBoxes; i++) {
+            vector<float> v(NumStatus, 0.0);
+            logits.push_back(v);
+        }
     }
 
 

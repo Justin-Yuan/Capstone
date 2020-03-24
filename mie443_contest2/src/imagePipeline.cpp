@@ -13,8 +13,10 @@ void ImagePipeline::updateLogits(Boxes &boxes, int boxID)
     for (int i = 0; i < NumStatus; i++)
     {
         int change = (i == iMatch) ? (alpha) : (beta);
+        std::cout << i << boxID << change << std::endl;
         logits[boxID][i] += change;
     }
+    std::cout << "Updated logits" << std::endl;
 }
 
 void ImagePipeline::finalizeTemplateID(int boxID)
@@ -30,7 +32,7 @@ void ImagePipeline::finalizeTemplateID(int boxID)
             bestIndex = i;
         }
     }
-
+    std::cout << "Finalized Template ID" << boxID << " " << bestIndex << std::endl;
     setTemplateID(bestIndex - 2, boxID); // note that getTemplateID returns -2 to 2, index is however 0 to 4
 }
 
@@ -45,6 +47,7 @@ void ImagePipeline::finalizeTemplateIDs()
 
 int ImagePipeline::getTemplateID(Boxes &boxes)
 {
+
     int templateID = AMBIGUITY;
     cv::Mat target_1 = imread("/home/yt1234gary/catkin_ws_mie/src/Capstone/mie443_contest2/boxes_database/template1.jpg", IMREAD_GRAYSCALE);
     cv::Mat target_2 = imread("/home/yt1234gary/catkin_ws_mie/src/Capstone/mie443_contest2/boxes_database/template2.jpg", IMREAD_GRAYSCALE);
@@ -63,7 +66,6 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
     }
     else
     {
-        /***YOUR CODE HERE***/
         // Store rectangle areas of each img-target matching in an array
         std::vector<float> matchedAreas(NumTargets, 0.0);
         for (int i = 0; i < NumTargets; i++)
@@ -91,6 +93,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
             else if (!isRectangle && isOutofBound)
             {
                 antiCandidateCount++;
+                cout << "\n--- Not Matching target " << i << "---\n";
             }
         }
 
@@ -113,7 +116,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
         // cv::imshow("view", img);
         // cv::waitKey(10);
     }
-
+    cout << "\n--- Finished template id matching " << "---\n";
     return templateID;
 }
 

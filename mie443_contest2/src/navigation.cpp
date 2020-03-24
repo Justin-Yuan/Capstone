@@ -41,8 +41,8 @@ void Navigation::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
 }
 
 void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
-    float margin = 1;
-    float box_size = 0.5;
+    float margin = 0.75;
+    float box_size = 0.0;
     int i = 0;
 
     for(auto b: coords) {
@@ -63,7 +63,7 @@ void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
             float view_x = x + margin * cos(view_ang);
             float view_y = y + margin * sin(view_ang);
 
-            std::vector<float> view_pose{view_x, view_y, view_ang};
+            std::vector<float> view_pose{view_x, view_y, -view_ang};
             view_points.push_back(view_pose);
         }
 
@@ -182,7 +182,7 @@ void Navigation::traverseBox(int box_idx) {
         int step = 1;
 
         float dist_first = getDist(curr_pos, view_points[start_idx]);
-        float dist_last = getDist(curr_pos, view_points[end_idx]);
+        float dist_last = getDist(curr_pos, view_points[end_idx-1]);
         if (dist_first > dist_last) {
             start_idx = view_points.size()-1;
             end_idx = -1;
