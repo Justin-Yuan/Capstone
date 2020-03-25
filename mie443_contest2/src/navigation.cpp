@@ -118,10 +118,29 @@ int Navigation::getDist(std::vector<float> coor1, std::vector<float> coor2){
     return pow(pow((coor1[0] - coor2[0]),2) + pow((coor1[1] - coor2[1]),2),1/2);
 }
 
+void Navigation::publishVelocity(float angular, float linear, bool spinOnce /*= false*/)
+{
+    ROS_INFO("Publishing - Linear: %f, Angular: %f", linear, angular);
+    geometry_msgs::Twist vel;
+    vel.angular.z = angular;
+    vel.linear.x = linear;
+    vel_pub.publish(vel);
+
+    if (spinOnce)
+    {
+        ros::spinOnce();
+    }
+}
+
 void Navigation::localizeStartingPose() {
+    // // rotate for 5 secs for better localization
+    // publishVelocity(angular_max, 0.0, true /* SpinOnce */);
+    // loop_rate.sleep();
+    // publishVelocity(0.0, 0.0, true /* SpinOnce */);
+   
     // localize the starting position
     ros::spinOnce();
-    std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
+    std::vector<float> starting_pos{robotPose.x, robotPose.yoh oh , robotPose.phi};
     origin = starting_pos;
     ROS_INFO("Finished obtaining starting pose: %f, %f, %f", robotPose.x, robotPose.y, robotPose.phi);
 }
