@@ -63,7 +63,11 @@ void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
             float view_x = x + margin * cos(view_ang);
             float view_y = y + margin * sin(view_ang);
 
-            std::vector<float> view_pose{view_x, view_y, -view_ang};
+            // robot angle 
+            float robot_view_angle = view_ang - M_PI; 
+            
+
+            std::vector<float> view_pose{view_x, view_y, robot_view_angle};
             view_points.push_back(view_pose);
         }
 
