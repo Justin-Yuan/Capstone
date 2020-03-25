@@ -42,7 +42,7 @@ void Navigation::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
 
 void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
     float margin = 0.5;
-    float box_size = 0.0;
+    // float box_size = 0.0;
     int i = 0;
 
     for(auto b: coords) {
@@ -52,9 +52,9 @@ void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
         float angle = b[2];
 
         // offset center of view points
-        float r = sqrt(x*x + y*y) + box_size;
-        x = r * cos(angle);
-        y = r * sin(angle);
+        // float r = sqrt(x*x + y*y) + box_size;
+        // x = r * cos(angle);
+        // y = r * sin(angle);
         
         // generate view points
         float ang_delta = M_PI / (num_view_points + 1);

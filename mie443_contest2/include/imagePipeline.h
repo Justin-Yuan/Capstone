@@ -28,7 +28,7 @@ using namespace cv::xfeatures2d;
 #define MaxArea 40000.
 #define MinArea 1000.
 #define MaxGoodArea 35000.
-#define MinGoodArea 0.
+#define MinGoodArea 2000.
 
 // Sizes
 #define NumTargets 3

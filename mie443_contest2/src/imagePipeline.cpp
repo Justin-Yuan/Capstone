@@ -32,7 +32,7 @@ void ImagePipeline::finalizeTemplateID(int boxID)
             bestIndex = i;
         }
     }
-    std::cout << "Finalized Template ID" << boxID << " " << bestIndex << std::endl;
+    std::cout << "Finalized Template ID " << boxID << " " << bestIndex << std::endl;
     setTemplateID(bestIndex - 2, boxID); // note that getTemplateID returns -2 to 2, index is however 0 to 4
 }
 
@@ -141,18 +141,15 @@ void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
 float ImagePipeline::getArea(std::vector<cv::Point2f> scene_corners, cv::Mat img_object)
 {
-    cout << "scene corner count" << scene_corners.size() << endl;
     if (scene_corners.size() < 4)
     {
         cout << " scene_corners size not correct, should be 4 " << endl;
         return 0.0;
     }  
-    cout << "proceeding with area calculations" << endl;
 
     vector<Point2f> points(4);
     for (int i = 0; i < scene_corners.size(); i++){
         points[i] = scene_corners[i] + Point2f( img_object.cols, 0);
-        cout << points[i].x << scene_corners[0].x << " " << points[i].y << scene_corners[0].y << endl;
     }
 
     // Get corner points for rectangle
@@ -160,8 +157,6 @@ float ImagePipeline::getArea(std::vector<cv::Point2f> scene_corners, cv::Mat img
     auto y_min = fmin(fmin(points[0].y, points[1].y), fmin(points[2].y, points[3].y));
     auto x_max = fmax(fmax(points[1].x, points[1].x), fmax(points[2].x, points[3].x));
     auto y_max = fmax(fmax(points[1].y, points[1].y), fmax(points[2].y, points[3].y));
-
-    cout << x_min << y_min << x_max << y_max << endl;
 
     float length = abs(x_max - x_min);
     float width = abs(y_max - y_min);
