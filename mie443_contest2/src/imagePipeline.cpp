@@ -256,8 +256,8 @@ float ImagePipeline::performSURF(cv::Mat img_scene, cv::Mat img_object)
     cout << "AREA: " << area << endl;
 
     //-- Show detected matches
-    imshow("Good Matches & Object detection", img_matches);
+    // imshow("Good Matches & Object detection", img_matches);
 
-    waitKey(5000);
+    // waitKey(5000);
     return area;
 }

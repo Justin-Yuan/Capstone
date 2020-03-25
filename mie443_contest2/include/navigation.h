@@ -19,6 +19,7 @@
 #include <boxes.h>
 #include <math.h>
 #include <iostream>
+#include <fstream>
 
 
 class Navigation {

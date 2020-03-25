@@ -235,6 +235,9 @@ void Navigation::traverseBox(int box_idx) {
 
 
 void Navigation::logImageIDs() {
+    ofstream myfile;
+    myfile.open("c2_output.txt");
+
     // load current image recognition progress
     for (int i = 0; i < boxes.coords.size(); i++) {
         int img_id = imagePipeline.box_to_ID(i);
@@ -242,5 +245,10 @@ void Navigation::logImageIDs() {
         float x = boxes.coords[i][0];
         float y = boxes.coords[i][1];
         ROS_INFO("Box %d is image %d (%s) at (%f, %f)", i, img_id, img_name.c_str(), x, y);
+
+        // log current result to file
+        myfile << img_name << "," << x << "," << y << "\n";
     }
+
+    myfile.close();
 }
