@@ -110,7 +110,7 @@ public:
         case BLANK:
             name = "Empty Surface";
         default:
-            name = "N/A";
+            name = "Empty Surface";
         }
 
         return name;

@@ -13,7 +13,6 @@ void ImagePipeline::updateLogits(Boxes &boxes, int boxID)
     for (int i = 0; i < NumStatus; i++)
     {
         int change = (i == iMatch) ? (alpha) : (beta);
-        std::cout << i << boxID << change << std::endl;
         logits[boxID][i] += change;
     }
     std::cout << "Updated logits" << std::endl;
@@ -82,7 +81,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
             float area = abs(matchedAreas[i]);
             bool isRectangle = (matchedAreas[i] > 0);
             bool isGoodSized = (area < MaxGoodArea && area > MinGoodArea);
-            bool isOutofBound = (area > MinArea || area < MinArea);
+            bool isOutofBound = (area > MinArea || area <= MinArea);
 
             if (isRectangle && isGoodSized)
             {
@@ -90,7 +89,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
                 candidateCount++;
                 cout << "\n--- Matching target " << i << isRectangle << isGoodSized << "---\n";
             }
-            else if (!isRectangle && isOutofBound)
+            else
             {
                 antiCandidateCount++;
                 cout << "\n--- Not Matching target " << i << isRectangle << isGoodSized << "---\n";
@@ -105,7 +104,7 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
         case 0: // other cases
         case 2:
         case 3:
-            templateID = AMBIGUITY;
+            templateID = BLANK;
             break;
         default: // certain that all three are non-matches
             if (antiCandidateCount == 3)

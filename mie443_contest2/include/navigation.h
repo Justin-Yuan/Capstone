@@ -25,7 +25,7 @@ class Navigation {
 	public:
 		Boxes boxes;
 
-		Navigation(ros::NodeHandle &n, Boxes &_boxes, int n_view_points) : robotPose(0, 0, 0), imagePipeline(n), loop_rate(5){
+		Navigation(ros::NodeHandle &n, Boxes &_boxes, int n_view_points) : robotPose(0, 0, 0), imagePipeline(n){
 			// map stuff
 			mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, this);
 			num_view_points = n_view_points;
@@ -55,7 +55,6 @@ class Navigation {
 		RobotPose robotPose;
 		ros::Subscriber mapSub, amclSub;
 		ros::Publisher vel_pub;
-		ros::Rate loop_rate;
 		ImagePipeline imagePipeline;
 
 		int num_view_points;

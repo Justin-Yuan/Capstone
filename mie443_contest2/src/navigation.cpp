@@ -137,10 +137,10 @@ void Navigation::publishVelocity(float angular, float linear, bool spinOnce /*= 
 }
 
 void Navigation::localizeStartingPose() {
-    // // rotate for 5 secs for better localization
-    // publishVelocity(angular_max, 0.0, true /* SpinOnce */);
-    // loop_rate.sleep();
-    // publishVelocity(0.0, 0.0, true /* SpinOnce */);
+    // rotate for 5 secs for better localization
+    publishVelocity(angular_max, 0.0, true /* SpinOnce */);
+    ros::Duration(5).sleep(); 
+    publishVelocity(0.0, 0.0, true /* SpinOnce */);
    
     // localize the starting position
     ros::spinOnce();
@@ -221,6 +221,7 @@ void Navigation::traverseBox(int box_idx) {
             ROS_INFO("Moving to box %d point %d from %d to %d: %f, %f, %f", box_idx, curr_idx, start_idx, end_idx, curr_goal[0], curr_goal[1], curr_goal[2]);
             // move to veiw point 
             moveToGoal(curr_goal[0], curr_goal[1], curr_goal[2]);
+            ROS_INFO("Current pose: %f, %f, %f", robotPose.x, robotPose.y, robotPose.phi);
             // do image stuff 
             ros::spinOnce();
             imagePipeline.updateLogits(boxes, box_idx);
