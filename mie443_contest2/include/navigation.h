@@ -2,6 +2,7 @@
 
 #include <nav_msgs/MapMetaData.h>
 #include <geometry_msgs/Pose.h>
+#include <geometry_msgs/Twist.h>
 #include "ros/ros.h"
 #include <vector>
 #include <map>
@@ -34,6 +35,9 @@ class Navigation {
 
 			// localization and image stuff
 			amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
+
+			// manuall move robot 
+			vel_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
 		}
 
 		void traverseAllBoxes();
@@ -44,11 +48,14 @@ class Navigation {
 		int width;
 		int height;
 		float resolution;
+		double angular_max = M_PI / 6;
 		std::vector<float> origin;
 		// int[] map;
 
 		RobotPose robotPose;
 		ros::Subscriber mapSub, amclSub;
+		ros::Publisher vel_pub;
+		ros::Rate loop_rate(5);
 		ImagePipeline imagePipeline;
 
 		int num_view_points;
@@ -63,5 +70,6 @@ class Navigation {
 		void localizeStartingPose();
 		int getDist(std::vector<float> coor1, std::vector<float> coor2);
 		void traverseBox(int box_idx);
+		void publishVelocity(float angular, float linear, bool spinOnce = false);
 
 };
