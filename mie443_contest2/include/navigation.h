@@ -25,7 +25,7 @@ class Navigation {
 	public:
 		Boxes boxes;
 
-		Navigation(ros::NodeHandle &n, Boxes &_boxes, int n_view_points) : robotPose(0, 0, 0), imagePipeline(n){
+		Navigation(ros::NodeHandle &n, Boxes &_boxes, int n_view_points) : robotPose(0, 0, 0), imagePipeline(n), loop_rate(5){
 			// map stuff
 			mapSub = n.subscribe("/map", 1, &Navigation::mapCallback, this);
 			num_view_points = n_view_points;
@@ -37,7 +37,7 @@ class Navigation {
 			amclSub = n.subscribe("/amcl_pose", 1, &RobotPose::poseCallback, &robotPose);
 
 			// manuall move robot 
-			vel_pub = nh.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
+			vel_pub = n.advertise<geometry_msgs::Twist>("cmd_vel_mux/input/teleop", 1);
 		}
 
 		void traverseAllBoxes();
@@ -55,7 +55,7 @@ class Navigation {
 		RobotPose robotPose;
 		ros::Subscriber mapSub, amclSub;
 		ros::Publisher vel_pub;
-		ros::Rate loop_rate(5);
+		ros::Rate loop_rate;
 		ImagePipeline imagePipeline;
 
 		int num_view_points;

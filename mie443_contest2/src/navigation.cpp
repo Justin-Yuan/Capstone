@@ -140,7 +140,7 @@ void Navigation::localizeStartingPose() {
    
     // localize the starting position
     ros::spinOnce();
-    std::vector<float> starting_pos{robotPose.x, robotPose.yoh oh , robotPose.phi};
+    std::vector<float> starting_pos{robotPose.x, robotPose.y, robotPose.phi};
     origin = starting_pos;
     ROS_INFO("Finished obtaining starting pose: %f, %f, %f", robotPose.x, robotPose.y, robotPose.phi);
 }
