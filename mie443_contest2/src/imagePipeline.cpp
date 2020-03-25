@@ -24,7 +24,7 @@ void ImagePipeline::finalizeTemplateID(int boxID)
     vector<float> currLogits = logits[boxID];
 
     // bestIndex = best of softmax or simply the max
-    float maxLogit = 0;
+    float maxLogit = -1000;
     int bestIndex = 0;
     for (int i = 0; i < currLogits.size(); i++) {
         if (currLogits[i] > maxLogit) {
@@ -88,12 +88,12 @@ int ImagePipeline::getTemplateID(Boxes &boxes)
             {
                 candidateID = i;
                 candidateCount++;
-                cout << "\n--- Matching target " << i << "---\n";
+                cout << "\n--- Matching target " << i << isRectangle << isGoodSized << "---\n";
             }
             else if (!isRectangle && isOutofBound)
             {
                 antiCandidateCount++;
-                cout << "\n--- Not Matching target " << i << "---\n";
+                cout << "\n--- Not Matching target " << i << isRectangle << isGoodSized << "---\n";
             }
         }
 
@@ -141,21 +141,27 @@ void ImagePipeline::imageCallback(const sensor_msgs::ImageConstPtr &msg)
 
 float ImagePipeline::getArea(std::vector<cv::Point2f> scene_corners, cv::Mat img_object)
 {
+    cout << "scene corner count" << scene_corners.size() << endl;
     if (scene_corners.size() < 4)
     {
         cout << " scene_corners size not correct, should be 4 " << endl;
         return 0.0;
     }  
+    cout << "proceeding with area calculations" << endl;
+
     vector<Point2f> points(4);
-    for (int i; i < scene_corners.size(); i++){
+    for (int i = 0; i < scene_corners.size(); i++){
         points[i] = scene_corners[i] + Point2f( img_object.cols, 0);
-        cout << points[i].x << " "<<points[i].y<<endl;
+        cout << points[i].x << scene_corners[0].x << " " << points[i].y << scene_corners[0].y << endl;
     }
+
     // Get corner points for rectangle
     auto x_min = fmin(fmin(points[0].x, points[1].x), fmin(points[2].x, points[3].x));
     auto y_min = fmin(fmin(points[0].y, points[1].y), fmin(points[2].y, points[3].y));
     auto x_max = fmax(fmax(points[1].x, points[1].x), fmax(points[2].x, points[3].x));
     auto y_max = fmax(fmax(points[1].y, points[1].y), fmax(points[2].y, points[3].y));
+
+    cout << x_min << y_min << x_max << y_max << endl;
 
     float length = abs(x_max - x_min);
     float width = abs(y_max - y_min);
@@ -253,6 +259,7 @@ float ImagePipeline::performSURF(cv::Mat img_scene, cv::Mat img_object)
     line(img_matches, scene_corners[3] + Point2f(img_object.cols, 0), scene_corners[0] + Point2f(img_object.cols, 0), Scalar(0, 255, 0), 4);
 
     float area = getArea(scene_corners, img_object);
+    cout << "AREA: " << area << endl;
 
     //-- Show detected matches
     imshow("Good Matches & Object detection", img_matches);

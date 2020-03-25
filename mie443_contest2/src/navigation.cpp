@@ -41,7 +41,7 @@ void Navigation::mapCallback(const nav_msgs::OccupancyGrid::ConstPtr& msg) {
 }
 
 void Navigation::getViewPoints(std::vector<std::vector<float>> coords) {
-    float margin = 0.75;
+    float margin = 0.5;
     float box_size = 0.0;
     int i = 0;
 
